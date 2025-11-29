@@ -26,17 +26,19 @@ import ai.koog.prompt.dsl.Prompt
 import ai.koog.prompt.executor.llms.all.simpleOllamaAIExecutor
 import ai.koog.prompt.llm.OllamaModels
 import kotlinx.coroutines.runBlocking
+import fr.nicolaslinard.koog.kmp.agents.orchestrator.OrchestratorFactory
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
 fun main() {
-    //preflightChecks()
-
-    //continueAvecExempleBasicAgent()
-    //continueAvecExempleFunctionalAgent()
-    continueAvecExepleComplexe()
+    // Démarrage par défaut: orchestrateur AoC (Jalon A)
+    runOrchestratorFlow()
+    // Vous pouvez réactiver les exemples de base au besoin:
+    // continueAvecExempleBasicAgent()
+    // continueAvecExempleFunctionalAgent()
+    // continueAvecExepleComplexe()
 }
 
 val promptExecutor = simpleOllamaAIExecutor()
@@ -64,6 +66,34 @@ fun continueAvecExepleComplexe() = runBlocking {
     val userInput = readlnOrNull() ?: ""
     val agentResult = agent.run(userInput)
     println("The agent returned: $agentResult")
+}
+
+fun runOrchestratorFlow() = runBlocking {
+    println("Assistant multi‑agents Advent of Code (Jalon A - JSON)")
+    ensureAoCSession()
+    println("Saisissez votre demande en français (ex: 'Résouds le jour 1 de 2023'):")
+    val request = readlnOrNull()?.ifBlank { null } ?: "Résouds le jour 1 de 2023"
+
+    val agent = OrchestratorFactory.build()
+    val result = agent.run(request)
+    println("Résultat: $result")
+}
+
+private fun ensureAoCSession() {
+    val hasProp = System.getProperty("AOC_SESSION")?.isNotBlank() == true
+    val hasEnv = System.getenv("AOC_SESSION")?.isNotBlank() == true
+    if (!hasProp && !hasEnv) {
+        println("AOC_SESSION non défini. Vous pouvez le définir comme variable d'environnement ou le coller maintenant (ligne cachée non supportée).\nATTENTION: la valeur ne sera pas journalisée, mais restera visible dans votre historique console.")
+        print("Collez la valeur du cookie AoC (ou laissez vide pour annuler): ")
+        val cookie = readlnOrNull()?.trim()
+        if (!cookie.isNullOrEmpty()) {
+            // Ne pas afficher la valeur. On la place uniquement en propriété JVM pour ce run.
+            System.setProperty("AOC_SESSION", cookie)
+            println("Cookie AoC enregistré en mémoire pour ce processus.")
+        } else {
+            println("Continuer sans cookie: seuls les modes lecture locale fonctionneront.")
+        }
+    }
 }
 
 val toolRegistry = ToolRegistry {

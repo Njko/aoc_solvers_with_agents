@@ -10,6 +10,8 @@ plugins {
 dependencies {
     // Project "app" depends on project "utils". (Project paths are separated with ":", so ":utils" refers to the top-level "utils" project.)
     implementation(project(":utils"))
+    // Orchestrator agent module
+    implementation(project(":agents:orchestrator"))
     // Koog Agents library (required by the Getting Started guide)
     implementation(libs.koog)
     implementation(libs.slf4jSimple)

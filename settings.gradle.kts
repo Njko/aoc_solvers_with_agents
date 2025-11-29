@@ -21,5 +21,12 @@ plugins {
 // Learn more about structuring projects with Gradle - https://docs.gradle.org/8.7/userguide/multi_project_builds.html
 include(":app")
 include(":utils")
+// Agents modules (one agent per module to allow independent compilation)
+include(":agents:orchestrator")
+include(":agents:intent")
+include(":agents:io")
+include(":agents:parsing")
+include(":agents:solve-arith")
+include(":agents:verify")
 
 rootProject.name = "KoogMultiagentProject"
