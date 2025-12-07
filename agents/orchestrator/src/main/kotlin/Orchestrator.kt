@@ -1,26 +1,25 @@
 package fr.nicolaslinard.koog.kmp.agents.orchestrator
 
-import MathTools
-import CalculatorTools
-import AoCInputTools
 import A2ARouter
 import A2ATaskRequest
+import AoCInputTools
+import BenchTools
+import CalculatorTools
+import MathTools
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.agent.functionalStrategy
-import ai.koog.agents.core.dsl.extension.*
 import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.agents.core.tools.reflect.tools
 import ai.koog.prompt.executor.llms.all.simpleOllamaAIExecutor
 import ai.koog.prompt.llm.OllamaModels
-import fr.nicolaslinard.koog.kmp.agents.intent.IntentTools
-import fr.nicolaslinard.koog.kmp.agents.solvearith.SolveArithTools
 import fr.nicolaslinard.koog.kmp.agents.intent.IntentA2A
+import fr.nicolaslinard.koog.kmp.agents.intent.IntentTools
 import fr.nicolaslinard.koog.kmp.agents.io.IoA2A
 import fr.nicolaslinard.koog.kmp.agents.solvearith.SolveArithA2A
-import fr.nicolaslinard.koog.kmp.agents.solvegrid.SolveGridA2A
+import fr.nicolaslinard.koog.kmp.agents.solvearith.SolveArithTools
 import fr.nicolaslinard.koog.kmp.agents.solvegraph.SolveGraphA2A
+import fr.nicolaslinard.koog.kmp.agents.solvegrid.SolveGridA2A
 import fr.nicolaslinard.koog.kmp.agents.verify.VerifyA2A
-import BenchTools
 
 object OrchestratorFactory {
 

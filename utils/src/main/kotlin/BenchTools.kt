@@ -21,8 +21,6 @@ object BenchTools {
         }
     }
 
-    fun durationMs(section: String): Long? = durs[section]
-
     fun report(): String {
         if (durs.isEmpty()) return ""
         return durs.entries.sortedBy { it.key }.joinToString(

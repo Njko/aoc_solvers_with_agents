@@ -2,9 +2,8 @@ package fr.nicolaslinard.koog.kmp.agents.io
 
 import A2AHandler
 import A2ARouter
-import A2ATaskRequest
-import A2ATaskResult
 import A2AStatus
+import A2ATaskResult
 import AoCInputTools
 
 object IoA2A {
@@ -31,7 +30,7 @@ object IoA2A {
     private fun readLocal(): A2AHandler = { req ->
         val text = req.payload ?: ""
         try {
-            val path = Regex("\\\"path\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"").find(text)?.groupValues?.get(1)
+            val path = Regex("\"path\"\\s*:\\s*\"([^\"]+)\"").find(text)?.groupValues?.get(1)
             require(!path.isNullOrBlank()) { "Invalid payload for readLocal: expected {\"path\":\"...\"}" }
             val tools = AoCInputTools()
             val raw = tools.readLocal(path)
