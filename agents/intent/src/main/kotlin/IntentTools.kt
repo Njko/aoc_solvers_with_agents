@@ -4,16 +4,16 @@ import ai.koog.agents.core.tools.annotations.LLMDescription
 import ai.koog.agents.core.tools.annotations.Tool
 import ai.koog.agents.core.tools.reflect.ToolSet
 
-@LLMDescription("Parses a French natural language request for Advent of Code scope (year/day/part). Returns a compact JSON string with keys: year (Int), day (Int or null), part (Int or null), scope ('year'|'day').")
+@LLMDescription("Parses an English natural language request for Advent of Code scope (year/day/part). Returns a compact JSON string with keys: year (Int), day (Int or null), part (Int or null), scope ('year'|'day').")
 class IntentTools : ToolSet {
 
     @Tool
-    @LLMDescription("Parse FR intent like: 'Résouds le jour 3 de 2018' or 'Résouds l'année 2023' or 'Résous le jour 1 de 2024 part 1'.")
-    fun parseIntentFr(text: String): String {
+    @LLMDescription("Parse English intent like: 'solve day 3 of 2018' or 'solve year 2023' or 'solve day 1 of 2024 part 1'.")
+    fun parseIntent(text: String): String {
         val t = text.trim().lowercase()
         // Try day + year + optional part
-        val reDayYearPart = Regex(".*jour\\s+(\\d{1,2}).*?(?:de|du|d')\\s*(\\d{4}).*?(?:part(?:ie)?\\s*(\\d))?.*")
-        val reYear = Regex(".*(?:annee|année)\\s*(\\d{4}).*")
+        val reDayYearPart = Regex(".*day\\s+(\\d{1,2}).*of\\s*(\\d{4})(?:.*part\\s*(\\d))?.*")
+        val reYear = Regex(".*year\\s*(\\d{4}).*")
 
         reDayYearPart.matchEntire(t)?.let { m ->
             val day = m.groupValues.getOrNull(1)?.toIntOrNull()

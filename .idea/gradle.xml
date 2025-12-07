@@ -26,6 +26,8 @@
             <option value="$PROJECT_DIR$/agents/orchestrator" />
             <option value="$PROJECT_DIR$/agents/parsing" />
             <option value="$PROJECT_DIR$/agents/solve-arith" />
+            <option value="$PROJECT_DIR$/agents/solve-graph" />
+            <option value="$PROJECT_DIR$/agents/solve-grid" />
             <option value="$PROJECT_DIR$/agents/verify" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/buildSrc" />

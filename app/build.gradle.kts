@@ -20,8 +20,9 @@ dependencies {
 
 application {
     // Define the Fully Qualified Name for the application main class
-    // (Note that Kotlin compiles `App.kt` to a class with FQN `com.example.app.AppKt`.)
-    mainClass = "fr.nicolaslinard.koog.kmp.app.AppKt"
+    // Attention: Kotlin génère une classe <FileName>Kt. Le fichier s'appelle `AppKt.kt`,
+    // donc la classe d'entrée est `AppKtKt`.
+    mainClass = "fr.nicolaslinard.koog.kmp.app.AppKtKt"
     applicationDefaultJvmArgs = listOf(
         "-Dfile.encoding=UTF-8",
         "-Dsun.stdout.encoding=UTF-8",

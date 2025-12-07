@@ -28,5 +28,7 @@ include(":agents:io")
 include(":agents:parsing")
 include(":agents:solve-arith")
 include(":agents:verify")
+include(":agents:solve-grid")
+include(":agents:solve-graph")
 
 rootProject.name = "KoogMultiagentProject"
