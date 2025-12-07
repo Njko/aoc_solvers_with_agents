@@ -109,4 +109,539 @@ class SolveArithTools : ToolSet {
 
         return count
     }
+
+    @Tool
+    @LLMDescription(
+        "Solves vertical math worksheet (AoC 2025 Day 6): numbers arranged in vertical columns with operations at bottom. Parse each column, apply operation, sum all results. Returns the grand total as Long."
+    )
+    fun solveVerticalMathWorksheet(input: String): Long {
+        val lines = input
+            .replace("\r\n", "\n").replace("\r", "\n")
+            .split('\n')
+            .filter { it.isNotEmpty() }
+
+        if (lines.isEmpty()) return 0
+
+        // Find the width of the input (max line length)
+        val width = lines.maxOf { it.length }
+
+        // Transpose to get columns
+        val columns = mutableListOf<MutableList<Char>>()
+        for (col in 0 until width) {
+            val column = mutableListOf<Char>()
+            for (line in lines) {
+                if (col < line.length) {
+                    column.add(line[col])
+                }
+            }
+            columns.add(column)
+        }
+
+        // Group consecutive non-space columns into problems
+        val problems = mutableListOf<List<List<Char>>>()
+        var currentProblem = mutableListOf<List<Char>>()
+
+        for (column in columns) {
+            val isAllSpaces = column.all { it == ' ' }
+            if (isAllSpaces) {
+                if (currentProblem.isNotEmpty()) {
+                    problems.add(currentProblem.toList())
+                    currentProblem = mutableListOf()
+                }
+            } else {
+                currentProblem.add(column)
+            }
+        }
+        if (currentProblem.isNotEmpty()) {
+            problems.add(currentProblem.toList())
+        }
+
+        // Solve each problem
+        var grandTotal = 0L
+
+        for (problem in problems) {
+            if (problem.isEmpty()) continue
+
+            // Read row-by-row from the problem columns
+            val numRows = problem[0].size
+            val numbers = mutableListOf<Long>()
+            var operator: Char? = null
+
+            for (row in 0 until numRows) {
+                // Extract the text from this row across all columns in the problem
+                val rowText = StringBuilder()
+                for (col in problem) {
+                    if (row < col.size) {
+                        rowText.append(col[row])
+                    }
+                }
+
+                val line = rowText.toString().trim()
+
+                // Check if this row contains the operator
+                if (line.contains('*') || line.contains('+')) {
+                    operator = line.find { it == '*' || it == '+' }
+                } else if (line.isNotEmpty()) {
+                    // Try to parse as a number
+                    line.toLongOrNull()?.let { numbers.add(it) }
+                }
+            }
+
+            // Apply operation
+            if (numbers.isNotEmpty() && operator != null) {
+                val result = when (operator) {
+                    '+' -> numbers.sum()
+                    '*' -> numbers.reduce { acc, n -> acc * n }
+                    else -> 0L
+                }
+                grandTotal += result
+            }
+        }
+
+        return grandTotal
+    }
+
+    @Tool
+    @LLMDescription(
+        "Solves vertical math worksheet Part 2 (AoC 2025 Day 6 Part 2): cephalopod math is written right-to-left in columns. Each column forms one number (top=most significant, bottom=least significant). Process columns right-to-left. Returns the grand total as Long."
+    )
+    fun solveVerticalMathWorksheetPart2(input: String): Long {
+        val lines = input
+            .replace("\r\n", "\n").replace("\r", "\n")
+            .split('\n')
+            .filter { it.isNotEmpty() }
+
+        if (lines.isEmpty()) return 0
+
+        // Find the width of the input (max line length)
+        val width = lines.maxOf { it.length }
+
+        // Transpose to get columns
+        val columns = mutableListOf<MutableList<Char>>()
+        for (col in 0 until width) {
+            val column = mutableListOf<Char>()
+            for (line in lines) {
+                if (col < line.length) {
+                    column.add(line[col])
+                }
+            }
+            columns.add(column)
+        }
+
+        // Group consecutive non-space columns into problems
+        val problems = mutableListOf<List<List<Char>>>()
+        var currentProblem = mutableListOf<List<Char>>()
+
+        for (column in columns) {
+            val isAllSpaces = column.all { it == ' ' }
+            if (isAllSpaces) {
+                if (currentProblem.isNotEmpty()) {
+                    problems.add(currentProblem.toList())
+                    currentProblem = mutableListOf()
+                }
+            } else {
+                currentProblem.add(column)
+            }
+        }
+        if (currentProblem.isNotEmpty()) {
+            problems.add(currentProblem.toList())
+        }
+
+        // Solve each problem
+        var grandTotal = 0L
+
+        for (problem in problems) {
+            if (problem.isEmpty()) continue
+
+            val numbers = mutableListOf<Long>()
+            var operator: Char? = null
+
+            // Find operator in leftmost column (where it should be for Part 2)
+            val leftmostColumn = problem.first()
+            val opChar = leftmostColumn.lastOrNull()
+            if (opChar == '*' || opChar == '+') {
+                operator = opChar
+            }
+
+            // Process ALL columns (including the one with operator) to extract numbers
+            for (column in problem) {
+                // Read column top-to-bottom to form number (top = most significant)
+                val digitChars = mutableListOf<Char>()
+                for (rowIdx in column.indices) {
+                    val ch = column[rowIdx]
+                    if (ch.isDigit()) {
+                        digitChars.add(ch)
+                    }
+                }
+
+                if (digitChars.isNotEmpty()) {
+                    val number = digitChars.joinToString("").toLongOrNull() ?: 0L
+                    numbers.add(number)
+                }
+            }
+
+            // Apply operation
+            if (numbers.isNotEmpty() && operator != null) {
+                val result = when (operator) {
+                    '+' -> numbers.sum()
+                    '*' -> numbers.reduce { acc, n -> acc * n }
+                    else -> 0L
+                }
+                grandTotal += result
+            }
+        }
+
+        return grandTotal
+    }
+
+    @Tool
+    @LLMDescription(
+        "Solves tachyon manifold simulation (AoC 2025 Day 7): A beam starts at 'S' and moves downward. When it hits a splitter '^', it stops and emits two new beams from the immediate left and right. Count how many times the beam is split. Returns the split count as Int."
+    )
+    fun solveTachyonManifold(input: String): Int {
+        val lines = input
+            .replace("\r\n", "\n").replace("\r", "\n")
+            .split('\n')
+            .filter { it.isNotEmpty() }
+
+        if (lines.isEmpty()) return 0
+
+        // Find start position 'S'
+        var startCol = -1
+        for (i in lines[0].indices) {
+            if (lines[0][i] == 'S') {
+                startCol = i
+                break
+            }
+        }
+        if (startCol == -1) return 0
+
+        var splitCount = 0
+        var activeBeams = mutableSetOf(startCol)
+
+        // Process each row from top to bottom
+        for (row in 1 until lines.size) {
+            val nextBeams = mutableSetOf<Int>()
+
+            for (col in activeBeams) {
+                if (col >= 0 && col < lines[row].length) {
+                    if (lines[row][col] == '^') {
+                        // Beam hits a splitter - it splits
+                        splitCount++
+                        // Emit new beams from immediate left and right
+                        if (col - 1 >= 0) nextBeams.add(col - 1)
+                        if (col + 1 < lines[row].length) nextBeams.add(col + 1)
+                    } else {
+                        // Beam continues downward
+                        nextBeams.add(col)
+                    }
+                }
+            }
+
+            activeBeams = nextBeams
+            if (activeBeams.isEmpty()) break
+        }
+
+        return splitCount
+    }
+
+    @Tool
+    @LLMDescription(
+        "Solves quantum tachyon manifold (AoC 2025 Day 7 Part 2): A single particle takes BOTH paths at each splitter, creating multiple timelines. Count the total number of distinct timelines after the particle completes all journeys. Returns timeline count as Long."
+    )
+    fun solveTachyonManifoldPart2(input: String): Long {
+        val lines = input
+            .replace("\r\n", "\n").replace("\r", "\n")
+            .split('\n')
+            .filter { it.isNotEmpty() }
+
+        if (lines.isEmpty()) return 0L
+
+        // Find start position 'S'
+        var startCol = -1
+        for (i in lines[0].indices) {
+            if (lines[0][i] == 'S') {
+                startCol = i
+                break
+            }
+        }
+        if (startCol == -1) return 0L
+
+        // Map of (row, col) -> number of timelines at this position
+        var currentTimelines = mutableMapOf(startCol to 1L)
+
+        // Process each row from top to bottom
+        for (row in 1 until lines.size) {
+            val nextTimelines = mutableMapOf<Int, Long>()
+
+            for ((col, count) in currentTimelines) {
+                if (col >= 0 && col < lines[row].length) {
+                    if (lines[row][col] == '^') {
+                        // Particle hits a splitter - timeline splits
+                        // Add count timelines going left
+                        if (col - 1 >= 0) {
+                            nextTimelines[col - 1] = nextTimelines.getOrDefault(col - 1, 0L) + count
+                        }
+                        // Add count timelines going right
+                        if (col + 1 < lines[row].length) {
+                            nextTimelines[col + 1] = nextTimelines.getOrDefault(col + 1, 0L) + count
+                        }
+                    } else {
+                        // Particle continues downward in all timelines
+                        nextTimelines[col] = nextTimelines.getOrDefault(col, 0L) + count
+                    }
+                }
+            }
+
+            currentTimelines = nextTimelines
+            if (currentTimelines.isEmpty()) break
+        }
+
+        // Sum all timelines that completed the journey
+        return currentTimelines.values.sum()
+    }
+
+    @Tool
+    @LLMDescription(
+        "Solves gift shop invalid IDs (AoC 2025 Day 2 Part 1): Find all IDs within given ranges that are made of a digit sequence repeated exactly twice (e.g., 11, 6464, 123123). Sum all invalid IDs. Returns the sum as Long."
+    )
+    fun solveGiftShopPart1(input: String): Long {
+        val ranges = input.trim().replace("\n", "").replace("\r", "").split(',')
+        var sum = 0L
+
+        for (range in ranges) {
+            val parts = range.trim().split('-')
+            if (parts.size != 2) continue
+            val start = parts[0].toLongOrNull() ?: continue
+            val end = parts[1].toLongOrNull() ?: continue
+
+            for (id in start..end) {
+                val idStr = id.toString()
+                // Check if it's a repeated sequence (exactly twice)
+                val len = idStr.length
+                if (len % 2 == 0) {
+                    val halfLen = len / 2
+                    val firstHalf = idStr.substring(0, halfLen)
+                    val secondHalf = idStr.substring(halfLen)
+                    if (firstHalf == secondHalf && firstHalf[0] != '0') {
+                        sum += id
+                    }
+                }
+            }
+        }
+
+        return sum
+    }
+
+    @Tool
+    @LLMDescription(
+        "Solves gift shop invalid IDs Part 2 (AoC 2025 Day 2 Part 2): Find all IDs that are made of a digit sequence repeated at least twice (e.g., 111, 12121212, 123123123). Sum all invalid IDs. Returns the sum as Long."
+    )
+    fun solveGiftShopPart2(input: String): Long {
+        val ranges = input.trim().replace("\n", "").replace("\r", "").split(',')
+        var sum = 0L
+
+        for (range in ranges) {
+            val parts = range.trim().split('-')
+            if (parts.size != 2) continue
+            val start = parts[0].toLongOrNull() ?: continue
+            val end = parts[1].toLongOrNull() ?: continue
+
+            for (id in start..end) {
+                val idStr = id.toString()
+                // Check if it's a repeated sequence (at least twice)
+                var isRepeated = false
+                for (patternLen in 1..idStr.length / 2) {
+                    if (idStr.length % patternLen == 0) {
+                        val pattern = idStr.substring(0, patternLen)
+                        if (pattern[0] != '0') {
+                            var matches = true
+                            for (i in patternLen until idStr.length step patternLen) {
+                                if (idStr.substring(i, i + patternLen) != pattern) {
+                                    matches = false
+                                    break
+                                }
+                            }
+                            if (matches) {
+                                isRepeated = true
+                                break
+                            }
+                        }
+                    }
+                }
+                if (isRepeated) {
+                    sum += id
+                }
+            }
+        }
+
+        return sum
+    }
+
+    @Tool
+    @LLMDescription(
+        "Solves battery joltage Part 1 (AoC 2025 Day 3 Part 1): For each bank (line of digits), select exactly 2 batteries to maximize joltage. Sum all maximum joltages. Returns the sum as Long."
+    )
+    fun solveBatteryJoltagePart1(input: String): Long {
+        val lines = input
+            .replace("\r\n", "\n").replace("\r", "\n")
+            .split('\n')
+            .filter { it.isNotEmpty() }
+
+        var totalJoltage = 0L
+
+        for (line in lines) {
+            var maxJoltage = 0L
+            // Try all pairs of positions
+            for (i in 0 until line.length - 1) {
+                for (j in i + 1 until line.length) {
+                    val joltage = "${line[i]}${line[j]}".toLongOrNull() ?: 0L
+                    if (joltage > maxJoltage) {
+                        maxJoltage = joltage
+                    }
+                }
+            }
+            totalJoltage += maxJoltage
+        }
+
+        return totalJoltage
+    }
+
+    @Tool
+    @LLMDescription(
+        "Solves battery joltage Part 2 (AoC 2025 Day 3 Part 2): For each bank, select exactly 12 batteries to maximize joltage (12-digit number). Sum all maximum joltages. Returns the sum as Long."
+    )
+    fun solveBatteryJoltagePart2(input: String): Long {
+        val lines = input
+            .replace("\r\n", "\n").replace("\r", "\n")
+            .split('\n')
+            .filter { it.isNotEmpty() }
+
+        var totalJoltage = 0L
+
+        for (line in lines) {
+            // Greedy approach: for each position in result, pick the largest digit
+            // from indices after the last selected, leaving enough digits for remaining positions
+            val digits = line.toList()
+            val result = StringBuilder()
+            var startIdx = 0  // start searching from here
+
+            for (resultPos in 0 until 12) {
+                val needed = 12 - resultPos - 1  // how many more we need after this
+                var bestIdx = -1
+                var bestDigit = '0'
+
+                // Only search from startIdx onward (maintain order)
+                for (i in startIdx until digits.size) {
+                    // Check if there are enough digits remaining after this position
+                    val remainingAfter = digits.size - i - 1
+
+                    if (remainingAfter >= needed) {
+                        if (digits[i] > bestDigit) {
+                            bestDigit = digits[i]
+                            bestIdx = i
+                        }
+                    }
+                }
+
+                if (bestIdx >= 0) {
+                    result.append(digits[bestIdx])
+                    startIdx = bestIdx + 1  // next search starts after this
+                }
+            }
+
+            val joltage = result.toString().toLongOrNull() ?: 0L
+            totalJoltage += joltage
+        }
+
+        return totalJoltage
+    }
+
+    @Tool
+    @LLMDescription(
+        "Solves forklift accessible paper rolls Part 1 (AoC 2025 Day 4 Part 1): Count rolls (@) with fewer than 4 adjacent rolls in 8 directions. Returns count as Int."
+    )
+    fun solveForkliftAccessPart1(input: String): Int {
+        val grid = input
+            .replace("\r\n", "\n").replace("\r", "\n")
+            .split('\n')
+            .filter { it.isNotEmpty() }
+
+        var accessibleCount = 0
+
+        for (row in grid.indices) {
+            for (col in grid[row].indices) {
+                if (grid[row][col] == '@') {
+                    var adjacentCount = 0
+                    // Check 8 adjacent positions
+                    for (dr in -1..1) {
+                        for (dc in -1..1) {
+                            if (dr == 0 && dc == 0) continue
+                            val nr = row + dr
+                            val nc = col + dc
+                            if (nr in grid.indices && nc in grid[nr].indices && grid[nr][nc] == '@') {
+                                adjacentCount++
+                            }
+                        }
+                    }
+                    if (adjacentCount < 4) {
+                        accessibleCount++
+                    }
+                }
+            }
+        }
+
+        return accessibleCount
+    }
+
+    @Tool
+    @LLMDescription(
+        "Solves forklift accessible paper rolls Part 2 (AoC 2025 Day 4 Part 2): Iteratively remove accessible rolls (<4 adjacent) until none remain. Count total removed. Returns count as Int."
+    )
+    fun solveForkliftAccessPart2(input: String): Int {
+        val grid = input
+            .replace("\r\n", "\n").replace("\r", "\n")
+            .split('\n')
+            .filter { it.isNotEmpty() }
+            .map { it.toCharArray() }
+
+        var totalRemoved = 0
+
+        while (true) {
+            val toRemove = mutableListOf<Pair<Int, Int>>()
+
+            // Find all accessible rolls
+            for (row in grid.indices) {
+                for (col in grid[row].indices) {
+                    if (grid[row][col] == '@') {
+                        var adjacentCount = 0
+                        for (dr in -1..1) {
+                            for (dc in -1..1) {
+                                if (dr == 0 && dc == 0) continue
+                                val nr = row + dr
+                                val nc = col + dc
+                                if (nr in grid.indices && nc in grid[nr].indices && grid[nr][nc] == '@') {
+                                    adjacentCount++
+                                }
+                            }
+                        }
+                        if (adjacentCount < 4) {
+                            toRemove.add(Pair(row, col))
+                        }
+                    }
+                }
+            }
+
+            if (toRemove.isEmpty()) break
+
+            // Remove all accessible rolls
+            for ((row, col) in toRemove) {
+                grid[row][col] = '.'
+            }
+
+            totalRemoved += toRemove.size
+        }
+
+        return totalRemoved
+    }
 }

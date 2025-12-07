@@ -41,7 +41,7 @@ object OrchestratorFactory {
             Essential instructions:
             - Understand requests in plain English (e.g., "solve day 1 of 2023", "solve day 4 of 2024").
             - Use STRICTLY the provided tools. Do not calculate in your head if a tool is available.
-            - Supported puzzles: 2023 Day 1 (calibration sum), 2024 Day 4 (XMAS grid), 2021 Day 12 (cave paths), 2025 Day 1 (dial simulation).
+            - Supported puzzles: 2023 Day 1 (calibration sum), 2024 Day 4 (XMAS grid), 2021 Day 12 (cave paths), 2025 Days 1-4, 6-7 (various puzzles).
             - If the user requests an unsupported day/year/part, politely respond that only the listed puzzles are currently available.
             - Process:
               1) Call parseIntent(text) to get year/day/part.
@@ -108,6 +108,50 @@ object OrchestratorFactory {
                             val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
                             value ?: cand
                         }
+                        year == 2025 && day == 2 -> {
+                            if (benchEnabled) BenchTools.start("solve")
+                            val action = if (part == 2) "giftShopPart2" else "giftShop"
+                            val solve = A2ARouter.send(
+                                A2ATaskRequest(capability = "aoc.solve.arith", action = action, payload = raw)
+                            )
+                            if (benchEnabled) BenchTools.stop("solve")
+                            val cand = solve.payload ?: return@functionalStrategy "Error in gift shop solver: ${solve.error ?: "unknown"}"
+                            val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
+                            value ?: cand
+                        }
+                        year == 2025 && day == 3 -> {
+                            if (benchEnabled) BenchTools.start("solve")
+                            val action = if (part == 2) "batteryJoltagePart2" else "batteryJoltage"
+                            val solve = A2ARouter.send(
+                                A2ATaskRequest(capability = "aoc.solve.arith", action = action, payload = raw)
+                            )
+                            if (benchEnabled) BenchTools.stop("solve")
+                            val cand = solve.payload ?: return@functionalStrategy "Error in battery joltage solver: ${solve.error ?: "unknown"}"
+                            val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
+                            value ?: cand
+                        }
+                        year == 2025 && day == 4 -> {
+                            if (benchEnabled) BenchTools.start("solve")
+                            val action = if (part == 2) "forkliftAccessPart2" else "forkliftAccess"
+                            val solve = A2ARouter.send(
+                                A2ATaskRequest(capability = "aoc.solve.arith", action = action, payload = raw)
+                            )
+                            if (benchEnabled) BenchTools.stop("solve")
+                            val cand = solve.payload ?: return@functionalStrategy "Error in forklift access solver: ${solve.error ?: "unknown"}"
+                            val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
+                            value ?: cand
+                        }
+                        year == 2025 && day == 6 -> {
+                            if (benchEnabled) BenchTools.start("solve")
+                            val action = if (part == 2) "verticalMathWorksheetPart2" else "verticalMathWorksheet"
+                            val solve = A2ARouter.send(
+                                A2ATaskRequest(capability = "aoc.solve.arith", action = action, payload = raw)
+                            )
+                            if (benchEnabled) BenchTools.stop("solve")
+                            val cand = solve.payload ?: return@functionalStrategy "Error in vertical math worksheet solver: ${solve.error ?: "unknown"}"
+                            val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
+                            value ?: cand
+                        }
                         year == 2024 && day == 4 -> {
                             if (benchEnabled) BenchTools.start("solve")
                             val solve = A2ARouter.send(
@@ -128,6 +172,17 @@ object OrchestratorFactory {
                             val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
                             value ?: cand
                         }
+                        year == 2025 && day == 7 -> {
+                            if (benchEnabled) BenchTools.start("solve")
+                            val action = if (part == 2) "tachyonManifoldPart2" else "tachyonManifold"
+                            val solve = A2ARouter.send(
+                                A2ATaskRequest(capability = "aoc.solve.arith", action = action, payload = raw)
+                            )
+                            if (benchEnabled) BenchTools.stop("solve")
+                            val cand = solve.payload ?: return@functionalStrategy "Error in tachyon manifold solver: ${solve.error ?: "unknown"}"
+                            val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
+                            value ?: cand
+                        }
                         year == 2023 && day == 1 -> {
                             if (benchEnabled) BenchTools.start("solve")
                             val solve = A2ARouter.send(
@@ -138,7 +193,7 @@ object OrchestratorFactory {
                             val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
                             value ?: cand
                         }
-                        else -> "Not supported: current support includes 2023/Day1 (arith), 2024/Day4 (grid), 2021/Day12 (graph), 2025/Day1 (dial)."
+                        else -> "Not supported: current support includes 2023/Day1, 2024/Day4, 2021/Day12, 2025/Days 1-4, 6-7."
                     }
                     if (benchEnabled) {
                         println(BenchTools.report())
@@ -158,6 +213,61 @@ object OrchestratorFactory {
                             solver.solveDialSimulationPart2(raw)
                         } else {
                             solver.solveDialSimulation(raw)
+                        }
+                        return@functionalStrategy value.toString()
+                    }
+                    if (intent.year == 2025 && intent.day == 2) {
+                        val io = AoCInputTools()
+                        val raw = io.fetchInput(intent.year, intent.day)
+                        val solver = SolveArithTools()
+                        val value = if (intent.part == 2) {
+                            solver.solveGiftShopPart2(raw)
+                        } else {
+                            solver.solveGiftShopPart1(raw)
+                        }
+                        return@functionalStrategy value.toString()
+                    }
+                    if (intent.year == 2025 && intent.day == 3) {
+                        val io = AoCInputTools()
+                        val raw = io.fetchInput(intent.year, intent.day)
+                        val solver = SolveArithTools()
+                        val value = if (intent.part == 2) {
+                            solver.solveBatteryJoltagePart2(raw)
+                        } else {
+                            solver.solveBatteryJoltagePart1(raw)
+                        }
+                        return@functionalStrategy value.toString()
+                    }
+                    if (intent.year == 2025 && intent.day == 4) {
+                        val io = AoCInputTools()
+                        val raw = io.fetchInput(intent.year, intent.day)
+                        val solver = SolveArithTools()
+                        val value = if (intent.part == 2) {
+                            solver.solveForkliftAccessPart2(raw)
+                        } else {
+                            solver.solveForkliftAccessPart1(raw)
+                        }
+                        return@functionalStrategy value.toString()
+                    }
+                    if (intent.year == 2025 && intent.day == 6) {
+                        val io = AoCInputTools()
+                        val raw = io.fetchInput(intent.year, intent.day)
+                        val solver = SolveArithTools()
+                        val value = if (intent.part == 2) {
+                            solver.solveVerticalMathWorksheetPart2(raw)
+                        } else {
+                            solver.solveVerticalMathWorksheet(raw)
+                        }
+                        return@functionalStrategy value.toString()
+                    }
+                    if (intent.year == 2025 && intent.day == 7) {
+                        val io = AoCInputTools()
+                        val raw = io.fetchInput(intent.year, intent.day)
+                        val solver = SolveArithTools()
+                        val value = if (intent.part == 2) {
+                            solver.solveTachyonManifoldPart2(raw)
+                        } else {
+                            solver.solveTachyonManifold(raw)
                         }
                         return@functionalStrategy value.toString()
                     }

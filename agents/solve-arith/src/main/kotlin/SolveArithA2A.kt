@@ -12,6 +12,16 @@ object SolveArithA2A {
         A2ARouter.register(cap, "calibrationSum", calibrationSumHandler())
         A2ARouter.register(cap, "dialSimulation", dialSimulationHandler())
         A2ARouter.register(cap, "dialSimulationPart2", dialSimulationPart2Handler())
+        A2ARouter.register(cap, "verticalMathWorksheet", verticalMathWorksheetHandler())
+        A2ARouter.register(cap, "verticalMathWorksheetPart2", verticalMathWorksheetPart2Handler())
+        A2ARouter.register(cap, "tachyonManifold", tachyonManifoldHandler())
+        A2ARouter.register(cap, "tachyonManifoldPart2", tachyonManifoldPart2Handler())
+        A2ARouter.register(cap, "giftShop", giftShopHandler())
+        A2ARouter.register(cap, "giftShopPart2", giftShopPart2Handler())
+        A2ARouter.register(cap, "batteryJoltage", batteryJoltageHandler())
+        A2ARouter.register(cap, "batteryJoltagePart2", batteryJoltagePart2Handler())
+        A2ARouter.register(cap, "forkliftAccess", forkliftAccessHandler())
+        A2ARouter.register(cap, "forkliftAccessPart2", forkliftAccessPart2Handler())
     }
 
     private fun calibrationSumHandler(): A2AHandler = { req: A2ATaskRequest ->
@@ -55,6 +65,166 @@ object SolveArithA2A {
                     "\"part\":2," +
                     "\"value\":$value," +
                     "\"method\":\"dialSimulationPart2\"" +
+                    "}"
+            A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
+        } catch (t: Throwable) {
+            A2ATaskResult(req.correlationId, A2AStatus.ERROR, error = t.message ?: t.toString())
+        }
+    }
+
+    private fun verticalMathWorksheetHandler(): A2AHandler = { req: A2ATaskRequest ->
+        val input = req.payload ?: ""
+        try {
+            val tools = SolveArithTools()
+            val value = tools.solveVerticalMathWorksheet(input)
+            val json = "{" +
+                    "\"part\":1," +
+                    "\"value\":$value," +
+                    "\"method\":\"verticalMathWorksheet\"" +
+                    "}"
+            A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
+        } catch (t: Throwable) {
+            A2ATaskResult(req.correlationId, A2AStatus.ERROR, error = t.message ?: t.toString())
+        }
+    }
+
+    private fun verticalMathWorksheetPart2Handler(): A2AHandler = { req: A2ATaskRequest ->
+        val input = req.payload ?: ""
+        try {
+            val tools = SolveArithTools()
+            val value = tools.solveVerticalMathWorksheetPart2(input)
+            val json = "{" +
+                    "\"part\":2," +
+                    "\"value\":$value," +
+                    "\"method\":\"verticalMathWorksheetPart2\"" +
+                    "}"
+            A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
+        } catch (t: Throwable) {
+            A2ATaskResult(req.correlationId, A2AStatus.ERROR, error = t.message ?: t.toString())
+        }
+    }
+
+    private fun tachyonManifoldHandler(): A2AHandler = { req: A2ATaskRequest ->
+        val input = req.payload ?: ""
+        try {
+            val tools = SolveArithTools()
+            val value = tools.solveTachyonManifold(input)
+            val json = "{" +
+                    "\"part\":1," +
+                    "\"value\":$value," +
+                    "\"method\":\"tachyonManifold\"" +
+                    "}"
+            A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
+        } catch (t: Throwable) {
+            A2ATaskResult(req.correlationId, A2AStatus.ERROR, error = t.message ?: t.toString())
+        }
+    }
+
+    private fun tachyonManifoldPart2Handler(): A2AHandler = { req: A2ATaskRequest ->
+        val input = req.payload ?: ""
+        try {
+            val tools = SolveArithTools()
+            val value = tools.solveTachyonManifoldPart2(input)
+            val json = "{" +
+                    "\"part\":2," +
+                    "\"value\":$value," +
+                    "\"method\":\"tachyonManifoldPart2\"" +
+                    "}"
+            A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
+        } catch (t: Throwable) {
+            A2ATaskResult(req.correlationId, A2AStatus.ERROR, error = t.message ?: t.toString())
+        }
+    }
+
+    private fun giftShopHandler(): A2AHandler = { req: A2ATaskRequest ->
+        val input = req.payload ?: ""
+        try {
+            val tools = SolveArithTools()
+            val value = tools.solveGiftShopPart1(input)
+            val json = "{" +
+                    "\"part\":1," +
+                    "\"value\":$value," +
+                    "\"method\":\"giftShop\"" +
+                    "}"
+            A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
+        } catch (t: Throwable) {
+            A2ATaskResult(req.correlationId, A2AStatus.ERROR, error = t.message ?: t.toString())
+        }
+    }
+
+    private fun giftShopPart2Handler(): A2AHandler = { req: A2ATaskRequest ->
+        val input = req.payload ?: ""
+        try {
+            val tools = SolveArithTools()
+            val value = tools.solveGiftShopPart2(input)
+            val json = "{" +
+                    "\"part\":2," +
+                    "\"value\":$value," +
+                    "\"method\":\"giftShopPart2\"" +
+                    "}"
+            A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
+        } catch (t: Throwable) {
+            A2ATaskResult(req.correlationId, A2AStatus.ERROR, error = t.message ?: t.toString())
+        }
+    }
+
+    private fun batteryJoltageHandler(): A2AHandler = { req: A2ATaskRequest ->
+        val input = req.payload ?: ""
+        try {
+            val tools = SolveArithTools()
+            val value = tools.solveBatteryJoltagePart1(input)
+            val json = "{" +
+                    "\"part\":1," +
+                    "\"value\":$value," +
+                    "\"method\":\"batteryJoltage\"" +
+                    "}"
+            A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
+        } catch (t: Throwable) {
+            A2ATaskResult(req.correlationId, A2AStatus.ERROR, error = t.message ?: t.toString())
+        }
+    }
+
+    private fun batteryJoltagePart2Handler(): A2AHandler = { req: A2ATaskRequest ->
+        val input = req.payload ?: ""
+        try {
+            val tools = SolveArithTools()
+            val value = tools.solveBatteryJoltagePart2(input)
+            val json = "{" +
+                    "\"part\":2," +
+                    "\"value\":$value," +
+                    "\"method\":\"batteryJoltagePart2\"" +
+                    "}"
+            A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
+        } catch (t: Throwable) {
+            A2ATaskResult(req.correlationId, A2AStatus.ERROR, error = t.message ?: t.toString())
+        }
+    }
+
+    private fun forkliftAccessHandler(): A2AHandler = { req: A2ATaskRequest ->
+        val input = req.payload ?: ""
+        try {
+            val tools = SolveArithTools()
+            val value = tools.solveForkliftAccessPart1(input)
+            val json = "{" +
+                    "\"part\":1," +
+                    "\"value\":$value," +
+                    "\"method\":\"forkliftAccess\"" +
+                    "}"
+            A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
+        } catch (t: Throwable) {
+            A2ATaskResult(req.correlationId, A2AStatus.ERROR, error = t.message ?: t.toString())
+        }
+    }
+
+    private fun forkliftAccessPart2Handler(): A2AHandler = { req: A2ATaskRequest ->
+        val input = req.payload ?: ""
+        try {
+            val tools = SolveArithTools()
+            val value = tools.solveForkliftAccessPart2(input)
+            val json = "{" +
+                    "\"part\":2," +
+                    "\"value\":$value," +
+                    "\"method\":\"forkliftAccessPart2\"" +
                     "}"
             A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
         } catch (t: Throwable) {
