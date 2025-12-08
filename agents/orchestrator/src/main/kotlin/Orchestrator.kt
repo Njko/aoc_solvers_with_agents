@@ -41,7 +41,7 @@ object OrchestratorFactory {
             Essential instructions:
             - Understand requests in plain English (e.g., "solve day 1 of 2023", "solve day 4 of 2024").
             - Use STRICTLY the provided tools. Do not calculate in your head if a tool is available.
-            - Supported puzzles: 2023 Day 1 (calibration sum), 2024 Day 4 (XMAS grid), 2021 Day 12 (cave paths), 2025 Days 1-4, 6-7 (various puzzles).
+            - Supported puzzles: 2023 Day 1 (calibration sum), 2024 Day 4 (XMAS grid), 2021 Day 12 (cave paths), 2025 Days 1-4, 6-8 (various puzzles).
             - If the user requests an unsupported day/year/part, politely respond that only the listed puzzles are currently available.
             - Process:
               1) Call parseIntent(text) to get year/day/part.
@@ -183,6 +183,17 @@ object OrchestratorFactory {
                             val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
                             value ?: cand
                         }
+                        year == 2025 && day == 8 -> {
+                            if (benchEnabled) BenchTools.start("solve")
+                            val action = if (part == 2) "playgroundJunctionBoxesPart2" else "playgroundJunctionBoxes"
+                            val solve = A2ARouter.send(
+                                A2ATaskRequest(capability = "aoc.solve.arith", action = action, payload = raw)
+                            )
+                            if (benchEnabled) BenchTools.stop("solve")
+                            val cand = solve.payload ?: return@functionalStrategy "Error in playground solver: ${solve.error ?: "unknown"}"
+                            val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
+                            value ?: cand
+                        }
                         year == 2023 && day == 1 -> {
                             if (benchEnabled) BenchTools.start("solve")
                             val solve = A2ARouter.send(
@@ -193,7 +204,7 @@ object OrchestratorFactory {
                             val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
                             value ?: cand
                         }
-                        else -> "Not supported: current support includes 2023/Day1, 2024/Day4, 2021/Day12, 2025/Days 1-4, 6-7."
+                        else -> "Not supported: current support includes 2023/Day1, 2024/Day4, 2021/Day12, 2025/Days 1-4, 6-8."
                     }
                     if (benchEnabled) {
                         println(BenchTools.report())
@@ -268,6 +279,17 @@ object OrchestratorFactory {
                             solver.solveTachyonManifoldPart2(raw)
                         } else {
                             solver.solveTachyonManifold(raw)
+                        }
+                        return@functionalStrategy value.toString()
+                    }
+                    if (intent.year == 2025 && intent.day == 8) {
+                        val io = AoCInputTools()
+                        val raw = io.fetchInput(intent.year, intent.day)
+                        val solver = SolveArithTools()
+                        val value = if (intent.part == 2) {
+                            solver.solvePlaygroundJunctionBoxesPart2(raw)
+                        } else {
+                            solver.solvePlaygroundJunctionBoxes(raw)
                         }
                         return@functionalStrategy value.toString()
                     }

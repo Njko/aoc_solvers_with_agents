@@ -22,6 +22,8 @@ object SolveArithA2A {
         A2ARouter.register(cap, "batteryJoltagePart2", batteryJoltagePart2Handler())
         A2ARouter.register(cap, "forkliftAccess", forkliftAccessHandler())
         A2ARouter.register(cap, "forkliftAccessPart2", forkliftAccessPart2Handler())
+        A2ARouter.register(cap, "playgroundJunctionBoxes", playgroundJunctionBoxesHandler())
+        A2ARouter.register(cap, "playgroundJunctionBoxesPart2", playgroundJunctionBoxesPart2Handler())
     }
 
     private fun calibrationSumHandler(): A2AHandler = { req: A2ATaskRequest ->
@@ -225,6 +227,38 @@ object SolveArithA2A {
                     "\"part\":2," +
                     "\"value\":$value," +
                     "\"method\":\"forkliftAccessPart2\"" +
+                    "}"
+            A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
+        } catch (t: Throwable) {
+            A2ATaskResult(req.correlationId, A2AStatus.ERROR, error = t.message ?: t.toString())
+        }
+    }
+
+    private fun playgroundJunctionBoxesHandler(): A2AHandler = { req: A2ATaskRequest ->
+        val input = req.payload ?: ""
+        try {
+            val tools = SolveArithTools()
+            val value = tools.solvePlaygroundJunctionBoxes(input)
+            val json = "{" +
+                    "\"part\":1," +
+                    "\"value\":$value," +
+                    "\"method\":\"playgroundJunctionBoxes\"" +
+                    "}"
+            A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
+        } catch (t: Throwable) {
+            A2ATaskResult(req.correlationId, A2AStatus.ERROR, error = t.message ?: t.toString())
+        }
+    }
+
+    private fun playgroundJunctionBoxesPart2Handler(): A2AHandler = { req: A2ATaskRequest ->
+        val input = req.payload ?: ""
+        try {
+            val tools = SolveArithTools()
+            val value = tools.solvePlaygroundJunctionBoxesPart2(input)
+            val json = "{" +
+                    "\"part\":2," +
+                    "\"value\":$value," +
+                    "\"method\":\"playgroundJunctionBoxesPart2\"" +
                     "}"
             A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
         } catch (t: Throwable) {

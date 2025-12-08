@@ -4,14 +4,9 @@
       "WebFetch(domain:adventofcode.com)",
       "Bash(./gradlew build:*)",
       "Bash(./gradlew run:*)",
-      "Bash(set AOC_SESSION=53616c7465645f5f0cd0a01c2743afce87a7b45e4e405990e8d0a66e2023390a4185f85f801b62bb34b1b98508eac645e2d15851e8769dcd3061e5df270ed1ae:*)",
-      "Bash(curl:*)",
-      "Bash(kotlinc:*)",
-      "Bash(java:*)",
-      "Bash(for day in*)",
-      "Bash(do for part in 1 2)",
-      "Bash(do echo \"=== Day $day Part $part ===\")",
-      "Bash(done)"
+      "Bash(export:*)",
+      "Bash(AOC_SESSION=\"53616c7465645f5f0cd0a01c2743afce87a7b45e4e405990e8d0a66e2023390a4185f85f801b62bb34b1b98508eac645e2d15851e8769dcd3061e5df270ed1ae\" ./gradlew:*)",
+      "Bash(AOC_SESSION=\"53616c7465645f5f0cd0a01c2743afce87a7b45e4e405990e8d0a66e2023390a4185f85f801b62bb34b1b98508eac645e2d15851e8769dcd3061e5df270ed1ae\" ./gradlew run:*)"
     ],
     "deny": [],
     "ask": []

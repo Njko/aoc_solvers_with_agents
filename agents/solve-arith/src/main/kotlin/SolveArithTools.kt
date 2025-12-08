@@ -644,4 +644,193 @@ class SolveArithTools : ToolSet {
 
         return totalRemoved
     }
+
+    @Tool
+    @LLMDescription(
+        "Solves playground junction boxes (AoC 2025 Day 8 Part 1): Connect 1000 closest pairs of junction boxes, find three largest circuits, multiply them. Returns product as Long."
+    )
+    fun solvePlaygroundJunctionBoxes(input: String): Long {
+        val lines = input
+            .replace("\r\n", "\n")
+            .replace("\r", "\n")
+            .trimEnd('\n', '\r')
+            .split('\n')
+            .filter { it.isNotBlank() }
+
+        // Parse coordinates
+        val boxes = mutableListOf<Triple<Int, Int, Int>>()
+        for (line in lines) {
+            val parts = line.split(',')
+            if (parts.size == 3) {
+                val x = parts[0].trim().toIntOrNull() ?: continue
+                val y = parts[1].trim().toIntOrNull() ?: continue
+                val z = parts[2].trim().toIntOrNull() ?: continue
+                boxes.add(Triple(x, y, z))
+            }
+        }
+
+        if (boxes.size < 2) return 0L
+
+        // Calculate all pairwise distances
+        data class Edge(val i: Int, val j: Int, val distSq: Long)
+        val edges = mutableListOf<Edge>()
+
+        for (i in boxes.indices) {
+            for (j in i + 1 until boxes.size) {
+                val (x1, y1, z1) = boxes[i]
+                val (x2, y2, z2) = boxes[j]
+                val dx = (x2 - x1).toLong()
+                val dy = (y2 - y1).toLong()
+                val dz = (z2 - z1).toLong()
+                val distSq = dx * dx + dy * dy + dz * dz
+                edges.add(Edge(i, j, distSq))
+            }
+        }
+
+        // Sort by distance
+        edges.sortBy { it.distSq }
+
+        // Union-Find
+        val parent = IntArray(boxes.size) { it }
+        val size = IntArray(boxes.size) { 1 }
+
+        fun find(x: Int): Int {
+            if (parent[x] != x) {
+                parent[x] = find(parent[x])
+            }
+            return parent[x]
+        }
+
+        fun union(x: Int, y: Int) {
+            val rootX = find(x)
+            val rootY = find(y)
+            if (rootX != rootY) {
+                if (size[rootX] < size[rootY]) {
+                    parent[rootX] = rootY
+                    size[rootY] += size[rootX]
+                } else {
+                    parent[rootY] = rootX
+                    size[rootX] += size[rootY]
+                }
+            }
+        }
+
+        // Connect 1000 closest pairs
+        val connectionsToMake = minOf(1000, edges.size)
+        for (i in 0 until connectionsToMake) {
+            val edge = edges[i]
+            union(edge.i, edge.j)
+        }
+
+        // Find all circuit sizes
+        val circuitSizes = mutableMapOf<Int, Int>()
+        for (i in boxes.indices) {
+            val root = find(i)
+            circuitSizes[root] = size[root]
+        }
+
+        // Get three largest
+        val sorted = circuitSizes.values.sortedDescending()
+        if (sorted.size < 3) return 0L
+
+        return sorted[0].toLong() * sorted[1].toLong() * sorted[2].toLong()
+    }
+
+    @Tool
+    @LLMDescription(
+        "Solves playground junction boxes Part 2 (AoC 2025 Day 8 Part 2): Connect pairs until all boxes form one circuit, multiply X coordinates of last two boxes connected. Returns product as Long."
+    )
+    fun solvePlaygroundJunctionBoxesPart2(input: String): Long {
+        val lines = input
+            .replace("\r\n", "\n")
+            .replace("\r", "\n")
+            .trimEnd('\n', '\r')
+            .split('\n')
+            .filter { it.isNotBlank() }
+
+        // Parse coordinates
+        val boxes = mutableListOf<Triple<Int, Int, Int>>()
+        for (line in lines) {
+            val parts = line.split(',')
+            if (parts.size == 3) {
+                val x = parts[0].trim().toIntOrNull() ?: continue
+                val y = parts[1].trim().toIntOrNull() ?: continue
+                val z = parts[2].trim().toIntOrNull() ?: continue
+                boxes.add(Triple(x, y, z))
+            }
+        }
+
+        if (boxes.size < 2) return 0L
+
+        // Calculate all pairwise distances
+        data class Edge(val i: Int, val j: Int, val distSq: Long)
+        val edges = mutableListOf<Edge>()
+
+        for (i in boxes.indices) {
+            for (j in i + 1 until boxes.size) {
+                val (x1, y1, z1) = boxes[i]
+                val (x2, y2, z2) = boxes[j]
+                val dx = (x2 - x1).toLong()
+                val dy = (y2 - y1).toLong()
+                val dz = (z2 - z1).toLong()
+                val distSq = dx * dx + dy * dy + dz * dz
+                edges.add(Edge(i, j, distSq))
+            }
+        }
+
+        // Sort by distance
+        edges.sortBy { it.distSq }
+
+        // Union-Find
+        val parent = IntArray(boxes.size) { it }
+        val size = IntArray(boxes.size) { 1 }
+
+        fun find(x: Int): Int {
+            if (parent[x] != x) {
+                parent[x] = find(parent[x])
+            }
+            return parent[x]
+        }
+
+        fun union(x: Int, y: Int): Boolean {
+            val rootX = find(x)
+            val rootY = find(y)
+            if (rootX != rootY) {
+                if (size[rootX] < size[rootY]) {
+                    parent[rootX] = rootY
+                    size[rootY] += size[rootX]
+                } else {
+                    parent[rootY] = rootX
+                    size[rootX] += size[rootY]
+                }
+                return true
+            }
+            return false
+        }
+
+        // Connect pairs until all boxes are in one circuit
+        var lastI = -1
+        var lastJ = -1
+
+        for (edge in edges) {
+            if (union(edge.i, edge.j)) {
+                lastI = edge.i
+                lastJ = edge.j
+
+                // Check if all boxes are in one circuit
+                val root = find(0)
+                if (size[root] == boxes.size) {
+                    // All connected!
+                    break
+                }
+            }
+        }
+
+        if (lastI == -1 || lastJ == -1) return 0L
+
+        // Return product of X coordinates
+        val x1 = boxes[lastI].first
+        val x2 = boxes[lastJ].first
+        return x1.toLong() * x2.toLong()
+    }
 }
