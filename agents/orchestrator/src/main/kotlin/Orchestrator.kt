@@ -92,237 +92,49 @@ object OrchestratorFactory {
                         A2ATaskRequest(capability = "aoc.input", action = "fetch", payload = fetchPayload)
                     )
                     if (benchEnabled) BenchTools.stop("io")
-                    if (inputRes.payload == null) return@functionalStrategy "Error fetching input: ${inputRes.error ?: "unknown"}"
-                    val raw = inputRes.payload
+                    val raw: String = inputRes.payload ?: return@functionalStrategy "Error fetching input: ${inputRes.error ?: "unknown"}"
 
-                    // 3) Route to solver based on known mappings
-                    val out = when {
-                        year == 2025 && day == 1 -> {
-                            if (benchEnabled) BenchTools.start("solve")
-                            val action = if (part == 2) "dialSimulationPart2" else "dialSimulation"
-                            val solve = A2ARouter.send(
-                                A2ATaskRequest(capability = "aoc.solve.arith", action = action, payload = raw)
-                            )
-                            if (benchEnabled) BenchTools.stop("solve")
-                            val cand = solve.payload ?: return@functionalStrategy "Error in dial simulation solver: ${solve.error ?: "unknown"}"
-                            val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
-                            value ?: cand
-                        }
-                        year == 2025 && day == 2 -> {
-                            if (benchEnabled) BenchTools.start("solve")
-                            val action = if (part == 2) "giftShopPart2" else "giftShop"
-                            val solve = A2ARouter.send(
-                                A2ATaskRequest(capability = "aoc.solve.arith", action = action, payload = raw)
-                            )
-                            if (benchEnabled) BenchTools.stop("solve")
-                            val cand = solve.payload ?: return@functionalStrategy "Error in gift shop solver: ${solve.error ?: "unknown"}"
-                            val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
-                            value ?: cand
-                        }
-                        year == 2025 && day == 3 -> {
-                            if (benchEnabled) BenchTools.start("solve")
-                            val action = if (part == 2) "batteryJoltagePart2" else "batteryJoltage"
-                            val solve = A2ARouter.send(
-                                A2ATaskRequest(capability = "aoc.solve.arith", action = action, payload = raw)
-                            )
-                            if (benchEnabled) BenchTools.stop("solve")
-                            val cand = solve.payload ?: return@functionalStrategy "Error in battery joltage solver: ${solve.error ?: "unknown"}"
-                            val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
-                            value ?: cand
-                        }
-                        year == 2025 && day == 4 -> {
-                            if (benchEnabled) BenchTools.start("solve")
-                            val action = if (part == 2) "forkliftAccessPart2" else "forkliftAccess"
-                            val solve = A2ARouter.send(
-                                A2ATaskRequest(capability = "aoc.solve.arith", action = action, payload = raw)
-                            )
-                            if (benchEnabled) BenchTools.stop("solve")
-                            val cand = solve.payload ?: return@functionalStrategy "Error in forklift access solver: ${solve.error ?: "unknown"}"
-                            val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
-                            value ?: cand
-                        }
-                        year == 2025 && day == 6 -> {
-                            if (benchEnabled) BenchTools.start("solve")
-                            val action = if (part == 2) "verticalMathWorksheetPart2" else "verticalMathWorksheet"
-                            val solve = A2ARouter.send(
-                                A2ATaskRequest(capability = "aoc.solve.arith", action = action, payload = raw)
-                            )
-                            if (benchEnabled) BenchTools.stop("solve")
-                            val cand = solve.payload ?: return@functionalStrategy "Error in vertical math worksheet solver: ${solve.error ?: "unknown"}"
-                            val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
-                            value ?: cand
-                        }
-                        year == 2024 && day == 4 -> {
-                            if (benchEnabled) BenchTools.start("solve")
-                            val solve = A2ARouter.send(
-                                A2ATaskRequest(capability = "aoc.solve.grid", action = "xmasCount", payload = raw)
-                            )
-                            if (benchEnabled) BenchTools.stop("solve")
-                            val cand = solve.payload ?: return@functionalStrategy "Error in grid solver: ${solve.error ?: "unknown"}"
-                            val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
-                            value ?: cand
-                        }
-                        year == 2021 && day == 12 -> {
-                            if (benchEnabled) BenchTools.start("solve")
-                            val solve = A2ARouter.send(
-                                A2ATaskRequest(capability = "aoc.solve.graph", action = "cavePathsCount", payload = raw)
-                            )
-                            if (benchEnabled) BenchTools.stop("solve")
-                            val cand = solve.payload ?: return@functionalStrategy "Error in graph solver: ${solve.error ?: "unknown"}"
-                            val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
-                            value ?: cand
-                        }
-                        year == 2025 && day == 7 -> {
-                            if (benchEnabled) BenchTools.start("solve")
-                            val action = if (part == 2) "tachyonManifoldPart2" else "tachyonManifold"
-                            val solve = A2ARouter.send(
-                                A2ATaskRequest(capability = "aoc.solve.arith", action = action, payload = raw)
-                            )
-                            if (benchEnabled) BenchTools.stop("solve")
-                            val cand = solve.payload ?: return@functionalStrategy "Error in tachyon manifold solver: ${solve.error ?: "unknown"}"
-                            val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
-                            value ?: cand
-                        }
-                        year == 2025 && day == 8 -> {
-                            if (benchEnabled) BenchTools.start("solve")
-                            val action = if (part == 2) "playgroundJunctionBoxesPart2" else "playgroundJunctionBoxes"
-                            val solve = A2ARouter.send(
-                                A2ATaskRequest(capability = "aoc.solve.arith", action = action, payload = raw)
-                            )
-                            if (benchEnabled) BenchTools.stop("solve")
-                            val cand = solve.payload ?: return@functionalStrategy "Error in playground solver: ${solve.error ?: "unknown"}"
-                            val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
-                            value ?: cand
-                        }
-                        year == 2025 && day == 9 -> {
-                            if (benchEnabled) BenchTools.start("solve")
-                            val action = if (part == 2) "movieTheaterPart2" else "movieTheater"
-                            val solve = A2ARouter.send(
-                                A2ATaskRequest(capability = "aoc.solve.arith", action = action, payload = raw)
-                            )
-                            if (benchEnabled) BenchTools.stop("solve")
-                            val cand = solve.payload ?: return@functionalStrategy "Error in movie theater solver: ${solve.error ?: "unknown"}"
-                            val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
-                            value ?: cand
-                        }
-                        year == 2023 && day == 1 -> {
-                            if (benchEnabled) BenchTools.start("solve")
-                            val solve = A2ARouter.send(
-                                A2ATaskRequest(capability = "aoc.solve.arith", action = "calibrationSum", payload = raw)
-                            )
-                            if (benchEnabled) BenchTools.stop("solve")
-                            val cand = solve.payload ?: return@functionalStrategy "Error in arith solver: ${solve.error ?: "unknown"}"
-                            val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
-                            value ?: cand
-                        }
-                        else -> "Not supported: current support includes 2023/Day1, 2024/Day4, 2021/Day12, 2025/Days 1-4, 6-9."
+                    // 3) Route to solver using declarative routing DSL
+                    val route = SolverRegistry.findRoute(year, day)
+                    val out = if (route != null) {
+                        val executor = RouteExecutor(benchEnabled, if (benchEnabled) BenchTools else null)
+                        val result = executor.execute(route, part, raw)
+                        result.fold(
+                            onSuccess = { it },
+                            onFailure = { error ->
+                                val errorMsg: String = error.message ?: "Unknown error"
+                                return@functionalStrategy errorMsg
+                            }
+                        )
+                    } else {
+                        SolverRegistry.supportedPuzzles()
                     }
                     if (benchEnabled) {
                         println(BenchTools.report())
                     }
                     return@functionalStrategy out
                 } else {
-                    // JSON/legacy mode: limited support
+                    // JSON/legacy mode: uses declarative routing DSL
                     val intent = parseIntentLocal(input)
-                    if (intent == null) {
-                        return@functionalStrategy "Limited functionality: please specify a request like: solve day 1 of 2023."
-                    }
-                    if (intent.year == 2025 && intent.day == 1) {
+                        ?: return@functionalStrategy "Limited functionality: please specify a request like: solve day 1 of 2023."
+
+                    val route = SolverRegistry.findRoute(intent.year, intent.day)
+                    val result = route?.let {
                         val io = AoCInputTools()
-                        val raw = io.fetchInput(intent.year, intent.day)
-                        val solver = SolveArithTools()
-                        val value = if (intent.part == 2) {
-                            solver.solveDialSimulationPart2(raw)
-                        } else {
-                            solver.solveDialSimulation(raw)
-                        }
-                        return@functionalStrategy value.toString()
+                        // JSON mode currently supports arithmetic solvers only
+                        val solverTools = mapOf(
+                            "aoc.solve.arith" to SolveArithTools()
+                        )
+                        val executor = JsonModeExecutor(
+                            inputFetcher = { year, day -> io.fetchInput(year, day) },
+                            solverTools = solverTools
+                        )
+                        executor.execute(it, intent.part, intent.year, intent.day)
+                    } ?: Result.failure(Exception(SolverRegistry.supportedPuzzles()))
+
+                    return@functionalStrategy result.getOrElse { error ->
+                        error.message ?: "Unknown error in JSON mode"
                     }
-                    if (intent.year == 2025 && intent.day == 2) {
-                        val io = AoCInputTools()
-                        val raw = io.fetchInput(intent.year, intent.day)
-                        val solver = SolveArithTools()
-                        val value = if (intent.part == 2) {
-                            solver.solveGiftShopPart2(raw)
-                        } else {
-                            solver.solveGiftShopPart1(raw)
-                        }
-                        return@functionalStrategy value.toString()
-                    }
-                    if (intent.year == 2025 && intent.day == 3) {
-                        val io = AoCInputTools()
-                        val raw = io.fetchInput(intent.year, intent.day)
-                        val solver = SolveArithTools()
-                        val value = if (intent.part == 2) {
-                            solver.solveBatteryJoltagePart2(raw)
-                        } else {
-                            solver.solveBatteryJoltagePart1(raw)
-                        }
-                        return@functionalStrategy value.toString()
-                    }
-                    if (intent.year == 2025 && intent.day == 4) {
-                        val io = AoCInputTools()
-                        val raw = io.fetchInput(intent.year, intent.day)
-                        val solver = SolveArithTools()
-                        val value = if (intent.part == 2) {
-                            solver.solveForkliftAccessPart2(raw)
-                        } else {
-                            solver.solveForkliftAccessPart1(raw)
-                        }
-                        return@functionalStrategy value.toString()
-                    }
-                    if (intent.year == 2025 && intent.day == 6) {
-                        val io = AoCInputTools()
-                        val raw = io.fetchInput(intent.year, intent.day)
-                        val solver = SolveArithTools()
-                        val value = if (intent.part == 2) {
-                            solver.solveVerticalMathWorksheetPart2(raw)
-                        } else {
-                            solver.solveVerticalMathWorksheet(raw)
-                        }
-                        return@functionalStrategy value.toString()
-                    }
-                    if (intent.year == 2025 && intent.day == 7) {
-                        val io = AoCInputTools()
-                        val raw = io.fetchInput(intent.year, intent.day)
-                        val solver = SolveArithTools()
-                        val value = if (intent.part == 2) {
-                            solver.solveTachyonManifoldPart2(raw)
-                        } else {
-                            solver.solveTachyonManifold(raw)
-                        }
-                        return@functionalStrategy value.toString()
-                    }
-                    if (intent.year == 2025 && intent.day == 8) {
-                        val io = AoCInputTools()
-                        val raw = io.fetchInput(intent.year, intent.day)
-                        val solver = SolveArithTools()
-                        val value = if (intent.part == 2) {
-                            solver.solvePlaygroundJunctionBoxesPart2(raw)
-                        } else {
-                            solver.solvePlaygroundJunctionBoxes(raw)
-                        }
-                        return@functionalStrategy value.toString()
-                    }
-                    if (intent.year == 2025 && intent.day == 9) {
-                        val io = AoCInputTools()
-                        val raw = io.fetchInput(intent.year, intent.day)
-                        val solver = SolveArithTools()
-                        val value = if (intent.part == 2) {
-                            solver.solveMovieTheaterPart2(raw)
-                        } else {
-                            solver.solveMovieTheater(raw)
-                        }
-                        return@functionalStrategy value.toString()
-                    }
-                    if (intent.year == 2023 && intent.day == 1) {
-                        val io = AoCInputTools()
-                        val raw = io.fetchInput(intent.year, intent.day)
-                        val solver = SolveArithTools()
-                        val value = solver.solveCalibrationSum(raw)
-                        return@functionalStrategy value.toString()
-                    }
-                    return@functionalStrategy "JSON mode: limited support for specific puzzles only."
                 }
             },
             maxIterations = 30,

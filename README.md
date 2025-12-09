@@ -224,6 +224,8 @@ KoogMultiagentProject/
 │   └── build.gradle.kts          # App configuration, stdin setup
 ├── agents/
 │   ├── orchestrator/             # Orchestrator agent (A2A & JSON modes)
+│   │   ├── Orchestrator.kt       # Main orchestrator logic
+│   │   └── SolverRoutes.kt       # Declarative routing DSL
 │   ├── intent/                   # Intent parsing agent
 │   ├── io/                       # Input fetching agent
 │   ├── solve-arith/              # Arithmetic solver agent
@@ -236,7 +238,8 @@ KoogMultiagentProject/
 ├── utils/                        # Shared utilities
 ├── buildSrc/                     # Gradle convention plugins
 ├── gradle.properties             # Gradle config + AOC_SESSION
-└── README.md                     # This file
+├── README.md                     # This file
+└── REFACTORING_SUMMARY.md        # DSL refactoring details
 ```
 
 ## How It Works
@@ -269,6 +272,32 @@ The Orchestrator routes requests to specialized solvers based on year/day mappin
 
 **Graph Solver** (`solve-graph`):
 - Pathfinding (Dijkstra, BFS/DFS), tree algorithms, network flow
+
+#### Declarative Routing DSL
+The routing logic uses a Kotlin DSL for clean, maintainable configuration:
+
+```kotlin
+object SolverRegistry {
+    val routes: Map<PuzzleKey, RouteConfig> = solverRoutes {
+        route(year = 2025, day = 1) {
+            capability = "aoc.solve.arith"
+            part1 { "dialSimulation" }
+            part2 { "dialSimulationPart2" }
+            errorName = "dial simulation"
+        }
+        // ... more routes
+    }
+}
+```
+
+**Key Features:**
+- **Type-safe**: Sealed classes ensure correct action types
+- **Convention over configuration**: Automatic method name derivation (`"dialSimulation"` → `"solveDialSimulation"`)
+- **Single source of truth**: All routes in `SolverRegistry`
+- **Easy to extend**: Add new puzzles with a simple `route()` block
+- **Zero duplication**: Eliminated ~240 lines of repetitive routing code
+
+See `REFACTORING_SUMMARY.md` for full details on the DSL architecture.
 
 ### 4. A2A Communication
 Agents communicate via A2A protocol:
