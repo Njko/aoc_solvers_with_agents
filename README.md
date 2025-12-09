@@ -192,6 +192,7 @@ Then enter any of these requests:
 - `solve day 1 of 2023` - Solves 2023 Day 1
 - `solve day 8 of 2025 part 1` - Solves 2025 Day 8 Part 1
 - `solve day 8 of 2025 part 2` - Solves 2025 Day 8 Part 2
+- `solve day 9 of 2025 part 2` - Solves 2025 Day 9 Part 2
 - `solve day 7 of 2025` - Solves 2025 Day 7 (defaults to part 1)
 
 ## Supported Puzzles
@@ -210,6 +211,7 @@ Then enter any of these requests:
 - **Day 6**: Gift Shop
 - **Day 7**: Battery Joltage
 - **Day 8**: Playground Junction Boxes (3D graph connectivity with Union-Find)
+- **Day 9**: Movie Theater (Rectangle optimization with coordinate compression)
 
 Each puzzle supports both Part 1 and Part 2 where applicable.
 
@@ -257,9 +259,10 @@ Using your session cookie for authentication.
 The Orchestrator routes requests to specialized solvers based on year/day mappings:
 
 **Arithmetic Solver** (`solve-arith`):
-- Uses mathematical algorithms, pattern matching, simulation
+- Uses mathematical algorithms, pattern matching, simulation, geometric optimization
 - Examples: calibration sums, dial simulations, manifold calculations
 - Day 8 uses Union-Find algorithm (Kruskal's MST variant) for 3D graph connectivity
+- Day 9 uses coordinate compression and scanline algorithms for efficient rectangle optimization
 
 **Grid Solver** (`solve-grid`):
 - Handles 2D grid traversal, pattern matching, cellular automata
@@ -290,6 +293,32 @@ Specify protocol via:
 ```bash
 ./gradlew run --args='--protocol JSON'
 ```
+
+## Performance Optimizations
+
+### Day 9 Part 2: Coordinate Compression
+The Day 9 Part 2 puzzle required finding the largest valid rectangle in a coordinate space with potentially millions of points. The naive approach of checking every coordinate was too slow.
+
+**Problem**:
+- Coordinate space could be 1,000,000 × 1,000,000
+- Need to check if points are inside a polygon
+- Need to validate rectangles contain only valid tiles
+
+**Solution - Coordinate Compression**:
+```
+Original coordinates: [2, 7, 9, 11, 431, 825, 2000000]
+Compressed indices:   [0, 1, 2,  3,   4,   5,       6]
+```
+
+**Key Optimizations**:
+1. **Map coordinates to indices**: Reduce coordinate space from millions to ~hundreds
+2. **Scanline algorithm**: Process each Y-coordinate once to find polygon interior
+3. **Work in compressed space**: All rectangle checks use small indices
+4. **Convert back only for area**: Final calculation uses original coordinates
+
+**Result**: Reduced time complexity from O(W×H×n) to O(n²×compressed²), solving in seconds instead of hours.
+
+Implementation: `SolveArithTools.kt:876-1000`
 
 ## Development
 
@@ -421,7 +450,10 @@ tasks.named<JavaExec>("run") {
 - **Union-Find (Disjoint Set Union)**: Day 8 junction boxes connectivity
 - **Kruskal's Algorithm**: MST variant for graph construction
 - **Path Compression**: Optimized Union-Find operations
-- **Greedy Algorithms**: Closest-pair connection strategies
+- **Coordinate Compression**: Day 9 Part 2 - reduces large coordinate space to unique values
+- **Scanline Algorithm**: Day 9 Part 2 - efficient polygon interior detection
+- **Ray Casting**: Point-in-polygon testing
+- **Greedy Algorithms**: Closest-pair connection strategies, rectangle optimization
 - **Dynamic Programming**: Various puzzle optimization problems
 - **BFS/DFS**: Grid and graph traversal
 - **Regex Parsing**: Intent and input parsing
