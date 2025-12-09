@@ -833,4 +833,189 @@ class SolveArithTools : ToolSet {
         val x2 = boxes[lastJ].first
         return x1.toLong() * x2.toLong()
     }
+
+    @Tool
+    @LLMDescription("Solves movie theater tile floor problem (AoC 2025 Day 9 Part 1): Given red tile coordinates, find the largest rectangle that uses red tiles for two opposite corners. Returns maximum area as Long.")
+    fun solveMovieTheater(input: String): Long {
+        val lines = input.replace("\r\n", "\n").replace("\r", "\n").trimEnd('\n', '\r').split('\n').filter { it.isNotBlank() }
+
+        // Parse coordinates
+        val tiles = mutableListOf<Pair<Int, Int>>()
+        for (line in lines) {
+            val parts = line.split(',')
+            if (parts.size == 2) {
+                val x = parts[0].trim().toIntOrNull() ?: continue
+                val y = parts[1].trim().toIntOrNull() ?: continue
+                tiles.add(Pair(x, y))
+            }
+        }
+
+        if (tiles.size < 2) return 0L
+
+        // Find largest rectangle using any two tiles as opposite corners
+        var maxArea = 0L
+        for (i in tiles.indices) {
+            for (j in i + 1 until tiles.size) {
+                val (x1, y1) = tiles[i]
+                val (x2, y2) = tiles[j]
+
+                // Only consider points that form opposite corners (different x and y)
+                if (x1 != x2 && y1 != y2) {
+                    // Area includes the boundary tiles
+                    val width = kotlin.math.abs(x2 - x1) + 1
+                    val height = kotlin.math.abs(y2 - y1) + 1
+                    val area = width.toLong() * height.toLong()
+                    maxArea = kotlin.math.max(maxArea, area)
+                }
+            }
+        }
+
+        return maxArea
+    }
+
+    @Tool
+    @LLMDescription("Solves movie theater part 2 (AoC 2025 Day 9 Part 2): Red tiles form a loop connected by green tiles. Tiles inside the loop are also green. Find largest rectangle using red corners that only contains red/green tiles.")
+    fun solveMovieTheaterPart2(input: String): Long {
+        val lines = input.replace("\r\n", "\n").replace("\r", "\n").trimEnd('\n', '\r').split('\n').filter { it.isNotBlank() }
+
+        // Parse red tile coordinates in order
+        val redTiles = mutableListOf<Pair<Int, Int>>()
+        for (line in lines) {
+            val parts = line.split(',')
+            if (parts.size == 2) {
+                val x = parts[0].trim().toIntOrNull() ?: continue
+                val y = parts[1].trim().toIntOrNull() ?: continue
+                redTiles.add(Pair(x, y))
+            }
+        }
+
+        if (redTiles.size < 2) return 0L
+
+        // Coordinate compression
+        val allX = redTiles.map { it.first }.toSet().sorted()
+        val allY = redTiles.map { it.second }.toSet().sorted()
+        val xMap = allX.withIndex().associate { it.value to it.index }
+        val yMap = allY.withIndex().associate { it.value to it.index }
+
+        val compressedRed = redTiles.map { Pair(xMap[it.first]!!, yMap[it.second]!!) }
+        val compressedRedSet = compressedRed.toSet()
+
+        // Build green tiles on edges
+        val greenSet = mutableSetOf<Pair<Int, Int>>()
+        for (i in compressedRed.indices) {
+            val (cx1, cy1) = compressedRed[i]
+            val (cx2, cy2) = compressedRed[(i + 1) % compressedRed.size]
+
+            if (cx1 == cx2) {
+                val minCY = kotlin.math.min(cy1, cy2)
+                val maxCY = kotlin.math.max(cy1, cy2)
+                for (cy in minCY..maxCY) {
+                    val tile = Pair(cx1, cy)
+                    if (tile !in compressedRedSet) greenSet.add(tile)
+                }
+            } else if (cy1 == cy2) {
+                val minCX = kotlin.math.min(cx1, cx2)
+                val maxCX = kotlin.math.max(cx1, cx2)
+                for (cx in minCX..maxCX) {
+                    val tile = Pair(cx, cy1)
+                    if (tile !in compressedRedSet) greenSet.add(tile)
+                }
+            }
+        }
+
+        // Mark inside points as green
+        val minCX = 0
+        val maxCX = allX.size - 1
+        val minCY = 0
+        val maxCY = allY.size - 1
+
+        // Use scanline to mark inside efficiently
+        for (cy in minCY..maxCY) {
+            val crossings = mutableListOf<Int>()
+            for (i in redTiles.indices) {
+                val p1 = redTiles[i]
+                val p2 = redTiles[(i + 1) % redTiles.size]
+                val y = allY[cy]
+
+                if ((p1.second <= y && p2.second > y) || (p2.second <= y && p1.second > y)) {
+                    val xIntersect = p1.first + (y - p1.second) * (p2.first - p1.first) / (p2.second - p1.second)
+                    val cxIntersect = xMap[allX.binarySearch(xIntersect).let { if (it >= 0) allX[it] else allX[-(it + 1)] }]!!
+                    crossings.add(cxIntersect)
+                }
+            }
+            crossings.sort()
+
+            var inside = false
+            var lastX = minCX
+            for (cx in crossings) {
+                if (inside) {
+                    for (x in lastX until cx) {
+                        val p = Pair(x, cy)
+                        if (p !in compressedRedSet) greenSet.add(p)
+                    }
+                }
+                inside = !inside
+                lastX = cx
+            }
+        }
+
+        val validSet = compressedRedSet + greenSet
+
+        // Find largest rectangle in compressed space
+        var maxArea = 0L
+        for (i in compressedRed.indices) {
+            for (j in i + 1 until compressedRed.size) {
+                val (cx1, cy1) = compressedRed[i]
+                val (cx2, cy2) = compressedRed[j]
+
+                if (cx1 != cx2 && cy1 != cy2) {
+                    val minCX = kotlin.math.min(cx1, cx2)
+                    val maxCX = kotlin.math.max(cx1, cx2)
+                    val minCY = kotlin.math.min(cy1, cy2)
+                    val maxCY = kotlin.math.max(cy1, cy2)
+
+                    // Check compressed rectangle
+                    var allValid = true
+                    outer@ for (cx in minCX..maxCX) {
+                        for (cy in minCY..maxCY) {
+                            if (Pair(cx, cy) !in validSet) {
+                                allValid = false
+                                break@outer
+                            }
+                        }
+                    }
+
+                    if (allValid) {
+                        // Calculate area in original coordinates
+                        val width = allX[maxCX] - allX[minCX] + 1
+                        val height = allY[maxCY] - allY[minCY] + 1
+                        val area = width.toLong() * height.toLong()
+                        maxArea = kotlin.math.max(maxArea, area)
+                    }
+                }
+            }
+        }
+
+        return maxArea
+    }
+
+    private fun isInsidePolygon(point: Pair<Int, Int>, polygon: List<Pair<Int, Int>>): Boolean {
+        // Ray casting algorithm
+        val (px, py) = point
+        var inside = false
+        var j = polygon.size - 1
+
+        for (i in polygon.indices) {
+            val (xi, yi) = polygon[i]
+            val (xj, yj) = polygon[j]
+
+            if ((yi > py) != (yj > py) &&
+                px < (xj - xi) * (py - yi) / (yj - yi) + xi) {
+                inside = !inside
+            }
+            j = i
+        }
+
+        return inside
+    }
 }

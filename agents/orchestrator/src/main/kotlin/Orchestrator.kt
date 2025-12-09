@@ -194,6 +194,17 @@ object OrchestratorFactory {
                             val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
                             value ?: cand
                         }
+                        year == 2025 && day == 9 -> {
+                            if (benchEnabled) BenchTools.start("solve")
+                            val action = if (part == 2) "movieTheaterPart2" else "movieTheater"
+                            val solve = A2ARouter.send(
+                                A2ATaskRequest(capability = "aoc.solve.arith", action = action, payload = raw)
+                            )
+                            if (benchEnabled) BenchTools.stop("solve")
+                            val cand = solve.payload ?: return@functionalStrategy "Error in movie theater solver: ${solve.error ?: "unknown"}"
+                            val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
+                            value ?: cand
+                        }
                         year == 2023 && day == 1 -> {
                             if (benchEnabled) BenchTools.start("solve")
                             val solve = A2ARouter.send(
@@ -204,7 +215,7 @@ object OrchestratorFactory {
                             val value = Regex("\"value\"\\s*:\\s*(\\d+)").find(cand)?.groupValues?.get(1)
                             value ?: cand
                         }
-                        else -> "Not supported: current support includes 2023/Day1, 2024/Day4, 2021/Day12, 2025/Days 1-4, 6-8."
+                        else -> "Not supported: current support includes 2023/Day1, 2024/Day4, 2021/Day12, 2025/Days 1-4, 6-9."
                     }
                     if (benchEnabled) {
                         println(BenchTools.report())
@@ -290,6 +301,17 @@ object OrchestratorFactory {
                             solver.solvePlaygroundJunctionBoxesPart2(raw)
                         } else {
                             solver.solvePlaygroundJunctionBoxes(raw)
+                        }
+                        return@functionalStrategy value.toString()
+                    }
+                    if (intent.year == 2025 && intent.day == 9) {
+                        val io = AoCInputTools()
+                        val raw = io.fetchInput(intent.year, intent.day)
+                        val solver = SolveArithTools()
+                        val value = if (intent.part == 2) {
+                            solver.solveMovieTheaterPart2(raw)
+                        } else {
+                            solver.solveMovieTheater(raw)
                         }
                         return@functionalStrategy value.toString()
                     }

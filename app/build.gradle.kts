@@ -26,6 +26,12 @@ application {
     applicationDefaultJvmArgs = listOf(
         "-Dfile.encoding=UTF-8",
         "-Dsun.stdout.encoding=UTF-8",
-        "-Dsun.stderr.encoding=UTF-8"
+        "-Dsun.stderr.encoding=UTF-8",
+        "-DAOC_SESSION=${System.getProperty("AOC_SESSION") ?: System.getenv("AOC_SESSION") ?: ""}"
     )
+}
+
+// Configure the run task to properly handle user input
+tasks.named<JavaExec>("run") {
+    standardInput = System.`in`
 }

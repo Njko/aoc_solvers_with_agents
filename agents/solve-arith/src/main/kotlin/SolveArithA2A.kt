@@ -24,6 +24,8 @@ object SolveArithA2A {
         A2ARouter.register(cap, "forkliftAccessPart2", forkliftAccessPart2Handler())
         A2ARouter.register(cap, "playgroundJunctionBoxes", playgroundJunctionBoxesHandler())
         A2ARouter.register(cap, "playgroundJunctionBoxesPart2", playgroundJunctionBoxesPart2Handler())
+        A2ARouter.register(cap, "movieTheater", movieTheaterHandler())
+        A2ARouter.register(cap, "movieTheaterPart2", movieTheaterPart2Handler())
     }
 
     private fun calibrationSumHandler(): A2AHandler = { req: A2ATaskRequest ->
@@ -259,6 +261,38 @@ object SolveArithA2A {
                     "\"part\":2," +
                     "\"value\":$value," +
                     "\"method\":\"playgroundJunctionBoxesPart2\"" +
+                    "}"
+            A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
+        } catch (t: Throwable) {
+            A2ATaskResult(req.correlationId, A2AStatus.ERROR, error = t.message ?: t.toString())
+        }
+    }
+
+    private fun movieTheaterHandler(): A2AHandler = { req: A2ATaskRequest ->
+        val input = req.payload ?: ""
+        try {
+            val tools = SolveArithTools()
+            val value = tools.solveMovieTheater(input)
+            val json = "{" +
+                    "\"part\":1," +
+                    "\"value\":$value," +
+                    "\"method\":\"movieTheater\"" +
+                    "}"
+            A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
+        } catch (t: Throwable) {
+            A2ATaskResult(req.correlationId, A2AStatus.ERROR, error = t.message ?: t.toString())
+        }
+    }
+
+    private fun movieTheaterPart2Handler(): A2AHandler = { req: A2ATaskRequest ->
+        val input = req.payload ?: ""
+        try {
+            val tools = SolveArithTools()
+            val value = tools.solveMovieTheaterPart2(input)
+            val json = "{" +
+                    "\"part\":2," +
+                    "\"value\":$value," +
+                    "\"method\":\"movieTheaterPart2\"" +
                     "}"
             A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
         } catch (t: Throwable) {
