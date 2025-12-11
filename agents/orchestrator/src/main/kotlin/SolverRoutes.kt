@@ -108,6 +108,7 @@ class RouteExecutor(
         part: Int?,
         input: String
     ): Result<String> {
+        System.err.println("DEBUG RouteExecutor: part=$part, action=${route.action}, toA2aAction=${route.action.toA2aAction(part)}")
         val request = A2ATaskRequest(
             capability = route.capability,
             action = route.action.toA2aAction(part),
@@ -238,10 +239,30 @@ object SolverRegistry {
             errorName = "movie theater"
         }
 
+        route(year = 2025, day = 10) {
+            capability = "aoc.solve.arith"
+            part1 { "factoryLights" }
+            part2 { "factoryJoltage" }
+            errorName = "factory"
+        }
+
         route(year = 2024, day = 4) {
             capability = "aoc.solve.grid"
             action { "xmasCount" }
             errorName = "grid"
+        }
+
+        route(year = 2024, day = 10) {
+            capability = "aoc.solve.grid"
+            action { "trailheadScore" }
+            errorName = "trailhead"
+        }
+
+        route(year = 2025, day = 11) {
+            capability = "aoc.solve.graph"
+            part1 { "reactorPaths" }
+            part2 { "reactorPathsPart2" }
+            errorName = "reactor"
         }
 
         route(year = 2021, day = 12) {

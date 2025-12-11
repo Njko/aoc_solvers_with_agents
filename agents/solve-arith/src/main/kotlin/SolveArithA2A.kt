@@ -26,6 +26,8 @@ object SolveArithA2A {
         A2ARouter.register(cap, "playgroundJunctionBoxesPart2", playgroundJunctionBoxesPart2Handler())
         A2ARouter.register(cap, "movieTheater", movieTheaterHandler())
         A2ARouter.register(cap, "movieTheaterPart2", movieTheaterPart2Handler())
+        A2ARouter.register(cap, "factoryLights", factoryLightsHandler())
+        A2ARouter.register(cap, "factoryJoltage", factoryJoltageHandler())
     }
 
     private fun calibrationSumHandler(): A2AHandler = { req: A2ATaskRequest ->
@@ -293,6 +295,38 @@ object SolveArithA2A {
                     "\"part\":2," +
                     "\"value\":$value," +
                     "\"method\":\"movieTheaterPart2\"" +
+                    "}"
+            A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
+        } catch (t: Throwable) {
+            A2ATaskResult(req.correlationId, A2AStatus.ERROR, error = t.message ?: t.toString())
+        }
+    }
+
+    private fun factoryLightsHandler(): A2AHandler = { req: A2ATaskRequest ->
+        val input = req.payload ?: ""
+        try {
+            val tools = SolveArithTools()
+            val value = tools.solveFactoryLights(input)
+            val json = "{" +
+                    "\"part\":1," +
+                    "\"value\":$value," +
+                    "\"method\":\"factoryLights\"" +
+                    "}"
+            A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
+        } catch (t: Throwable) {
+            A2ATaskResult(req.correlationId, A2AStatus.ERROR, error = t.message ?: t.toString())
+        }
+    }
+
+    private fun factoryJoltageHandler(): A2AHandler = { req: A2ATaskRequest ->
+        val input = req.payload ?: ""
+        try {
+            val tools = SolveArithTools()
+            val value = tools.solveFactoryJoltage(input)
+            val json = "{" +
+                    "\"part\":2," +
+                    "\"value\":$value," +
+                    "\"method\":\"factoryJoltage\"" +
                     "}"
             A2ATaskResult(req.correlationId, A2AStatus.OK, payload = json)
         } catch (t: Throwable) {

@@ -1018,4 +1018,327 @@ class SolveArithTools : ToolSet {
 
         return inside
     }
+
+    @Tool
+    @LLMDescription("Solves factory machine lights (AoC 2025 Day 10 Part 1): Each line has [lights], (buttons), {joltage}. Find minimum button presses to achieve target light configuration. Uses Gaussian elimination over GF(2).")
+    fun solveFactoryLights(input: String): Int {
+        val lines = input.replace("\r\n", "\n").replace("\r", "\n").trimEnd('\n', '\r').split('\n').filter { it.isNotBlank() }
+
+        var totalPresses = 0
+
+        for (line in lines) {
+            // Parse: [lights] (buttons...) {joltage}
+            val lightPattern = Regex("\\[([.#]+)\\]").find(line)?.groupValues?.get(1) ?: continue
+            val buttonMatches = Regex("\\(([0-9,]+)\\)").findAll(line).toList()
+
+            if (buttonMatches.isEmpty()) continue
+
+            val numLights = lightPattern.length
+            val numButtons = buttonMatches.size
+
+            // Target state: which lights should be ON (1)
+            val target = BooleanArray(numLights) { lightPattern[it] == '#' }
+
+            // Build matrix: buttons[i] affects lights according to button spec
+            val buttons = Array(numButtons) { buttonIdx ->
+                val indices = buttonMatches[buttonIdx].groupValues[1].split(',').mapNotNull { it.trim().toIntOrNull() }
+                BooleanArray(numLights) { lightIdx -> lightIdx in indices }
+            }
+
+            // Solve: find minimal button presses using Gaussian elimination over GF(2)
+            val solution = solveGF2System(buttons, target)
+            totalPresses += solution
+        }
+
+        return totalPresses
+    }
+
+    private fun solveGF2System(buttons: Array<BooleanArray>, target: BooleanArray): Int {
+        val numButtons = buttons.size
+        val numLights = target.size
+
+        // Build augmented matrix [A|b] where A is buttons transposed, b is target
+        val matrix = Array(numLights) { lightIdx ->
+            BooleanArray(numButtons + 1) { colIdx ->
+                if (colIdx < numButtons) buttons[colIdx][lightIdx]
+                else target[lightIdx]
+            }
+        }
+
+        // Gaussian elimination over GF(2) to reduced row echelon form
+        val pivotCol = IntArray(numLights) { -1 }
+        var currentRow = 0
+
+        for (col in 0 until numButtons) {
+            // Find pivot
+            var pivotRow = -1
+            for (row in currentRow until numLights) {
+                if (matrix[row][col]) {
+                    pivotRow = row
+                    break
+                }
+            }
+
+            if (pivotRow == -1) continue
+
+            // Swap rows
+            if (pivotRow != currentRow) {
+                val temp = matrix[currentRow]
+                matrix[currentRow] = matrix[pivotRow]
+                matrix[pivotRow] = temp
+            }
+
+            pivotCol[currentRow] = col
+
+            // Eliminate
+            for (row in 0 until numLights) {
+                if (row != currentRow && matrix[row][col]) {
+                    for (c in 0..numButtons) {
+                        matrix[row][c] = matrix[row][c] xor matrix[currentRow][c]
+                    }
+                }
+            }
+
+            currentRow++
+        }
+
+        // Check for consistency
+        for (row in currentRow until numLights) {
+            if (matrix[row][numButtons]) {
+                return 0 // No solution
+            }
+        }
+
+        // Identify pivot and free variables
+        val isPivot = BooleanArray(numButtons) { false }
+        val pivotToRow = IntArray(numButtons) { -1 }
+        for (row in 0 until currentRow) {
+            val col = pivotCol[row]
+            if (col >= 0) {
+                isPivot[col] = true
+                pivotToRow[col] = row
+            }
+        }
+
+        val freeVars = mutableListOf<Int>()
+        for (col in 0 until numButtons) {
+            if (!isPivot[col]) {
+                freeVars.add(col)
+            }
+        }
+
+        // If no free variables, return the unique solution
+        if (freeVars.isEmpty()) {
+            val solution = BooleanArray(numButtons)
+            for (col in 0 until numButtons) {
+                if (isPivot[col]) {
+                    solution[col] = matrix[pivotToRow[col]][numButtons]
+                }
+            }
+            return solution.count { it }
+        }
+
+        // Try all combinations of free variables to find minimum
+        var minPresses = Int.MAX_VALUE
+        val numCombinations = 1 shl freeVars.size
+
+        for (mask in 0 until numCombinations) {
+            val solution = BooleanArray(numButtons)
+
+            // Set free variables according to mask
+            for (i in freeVars.indices) {
+                solution[freeVars[i]] = (mask and (1 shl i)) != 0
+            }
+
+            // Calculate dependent variables
+            for (col in 0 until numButtons) {
+                if (isPivot[col]) {
+                    val row = pivotToRow[col]
+                    var value = matrix[row][numButtons]
+                    for (otherCol in 0 until numButtons) {
+                        if (otherCol != col && matrix[row][otherCol]) {
+                            value = value xor solution[otherCol]
+                        }
+                    }
+                    solution[col] = value
+                }
+            }
+
+            minPresses = minOf(minPresses, solution.count { it })
+        }
+
+        return minPresses
+    }
+
+    @Tool
+    @LLMDescription("Solves factory machine joltage counters (AoC 2025 Day 10 Part 2): Each line has [ignored], (buttons), {joltage targets}. Counters start at 0, each button press increments specified counters by 1. Find minimum button presses to reach exact joltage targets.")
+    fun solveFactoryJoltage(input: String): Int {
+        System.err.println("DEBUG: solveFactoryJoltage called!")
+        val lines = input.replace("\r\n", "\n").replace("\r", "\n").trimEnd('\n', '\r').split('\n').filter { it.isNotBlank() }
+
+        var totalPresses = 0
+        var lineNum = 0
+
+        for (line in lines) {
+            lineNum++
+            // Parse: [lights] (buttons...) {joltage}
+            val buttonMatches = Regex("\\(([0-9,]+)\\)").findAll(line).toList()
+            val joltageMatch = Regex("\\{([0-9,]+)\\}").find(line)?.groupValues?.get(1) ?: continue
+
+            if (buttonMatches.isEmpty()) continue
+
+            val targets = joltageMatch.split(',').mapNotNull { it.trim().toIntOrNull() }
+            if (targets.isEmpty()) continue
+
+            val numCounters = targets.size
+            val numButtons = buttonMatches.size
+
+            // Build matrix: buttons[i] affects counters according to button spec
+            val buttons = Array(numButtons) { buttonIdx ->
+                val indices = buttonMatches[buttonIdx].groupValues[1].split(',').mapNotNull { it.trim().toIntOrNull() }
+                IntArray(numCounters) { counterIdx -> if (counterIdx in indices) 1 else 0 }
+            }
+
+            // Solve: find minimal button presses using A* search
+            System.err.println("DEBUG: Line $lineNum - targets: ${targets.joinToString(",")}, buttons: ${numButtons}")
+            val solution = solveIntegerSystem(buttons, targets.toIntArray())
+            System.err.println("DEBUG: Line $lineNum - solution: $solution presses")
+            totalPresses += solution
+        }
+
+        System.err.println("DEBUG: Total presses: $totalPresses")
+        return totalPresses
+    }
+
+    private fun solveIntegerSystem(buttons: Array<IntArray>, targets: IntArray): Int {
+        // Solve Ax = b using Gaussian elimination over rationals, then search free variables
+
+        val numButtons = buttons.size
+        val numCounters = targets.size
+
+        // Build augmented matrix [A|b] where rows are counters, cols are buttons
+        val matrix = Array(numCounters) { c ->
+            LongArray(numButtons + 1) { b ->
+                if (b < numButtons) buttons[b][c].toLong() else targets[c].toLong()
+            }
+        }
+
+        // Gaussian elimination to RREF
+        val pivotCol = IntArray(numCounters) { -1 }
+        var currentRow = 0
+
+        for (col in 0 until numButtons) {
+            if (currentRow >= numCounters) break
+
+            // Find pivot with largest absolute value (partial pivoting)
+            var pivotRow = -1
+            var maxAbsValue = 0L
+            for (r in currentRow until numCounters) {
+                val absVal = kotlin.math.abs(matrix[r][col])
+                if (absVal > maxAbsValue) {
+                    maxAbsValue = absVal
+                    pivotRow = r
+                }
+            }
+
+            if (pivotRow == -1) continue
+
+            // Swap rows
+            if (pivotRow != currentRow) {
+                val temp = matrix[currentRow]
+                matrix[currentRow] = matrix[pivotRow]
+                matrix[pivotRow] = temp
+            }
+
+            pivotCol[currentRow] = col
+
+            // Eliminate
+            val pivot = matrix[currentRow][col]
+            for (r in 0 until numCounters) {
+                if (r == currentRow || matrix[r][col] == 0L) continue
+                val factor = matrix[r][col]
+                for (c in 0..numButtons) {
+                    matrix[r][c] = matrix[r][c] * pivot - matrix[currentRow][c] * factor
+                }
+            }
+
+            currentRow++
+        }
+
+        // Identify free variables
+        val isFree = BooleanArray(numButtons) { true }
+        for (r in 0 until currentRow) {
+            if (pivotCol[r] != -1) isFree[pivotCol[r]] = false
+        }
+
+        val freeVars = (0 until numButtons).filter { isFree[it] }
+
+        System.err.println("DEBUG: Free variables: ${freeVars.size} out of $numButtons")
+
+        // Search for minimum solution
+        return searchMinSolution(matrix, pivotCol, currentRow, freeVars, numButtons)
+    }
+
+    private fun searchMinSolution(
+        matrix: Array<LongArray>,
+        pivotCol: IntArray,
+        numPivotRows: Int,
+        freeVars: List<Int>,
+        numButtons: Int
+    ): Int {
+        var minSum = Int.MAX_VALUE
+
+        val searchLimit = when {
+            freeVars.isEmpty() -> 1
+            freeVars.size == 1 -> 300
+            freeVars.size == 2 -> 250
+            freeVars.size == 3 -> 100
+            freeVars.size == 4 -> 50
+            freeVars.size == 5 -> 30
+            else -> 15
+        }
+
+        fun search(freeIdx: Int, assignment: IntArray) {
+            if (freeIdx >= freeVars.size) {
+                val presses = assignment.copyOf()
+                var valid = true
+
+                for (r in 0 until numPivotRows) {
+                    val pivotButton = pivotCol[r]
+                    if (pivotButton == -1) continue
+
+                    val pivot = matrix[r][pivotButton]
+                    if (pivot == 0L) continue
+
+                    var rhs = matrix[r][numButtons]
+                    for (fv in freeVars) {
+                        rhs -= matrix[r][fv] * presses[fv]
+                    }
+
+                    if (rhs % pivot != 0L || rhs / pivot < 0) {
+                        valid = false
+                        break
+                    }
+
+                    presses[pivotButton] = (rhs / pivot).toInt()
+                }
+
+                if (valid) {
+                    val sum = presses.sum()
+                    if (sum < minSum) minSum = sum
+                }
+                return
+            }
+
+            val fv = freeVars[freeIdx]
+            for (value in 0..searchLimit) {
+                assignment[fv] = value
+                search(freeIdx + 1, assignment)
+            }
+        }
+
+        search(0, IntArray(numButtons))
+        return if (minSum == Int.MAX_VALUE) 0 else minSum
+    }
+
 }

@@ -49,12 +49,22 @@ private fun ensureAoCSession() {
 
 private fun parseRequestFromArgs(args: Array<String>): String? {
     if (args.isEmpty()) return null
-    // Very small CLI parser: supports --request "..." or --request=...
+
+    // Check for explicit --request flag
     val idx = args.indexOfFirst { it == "--request" || it.startsWith("--request=") }
-    if (idx == -1) return null
-    val token = args[idx]
-    return if (token.startsWith("--request=")) token.substringAfter("--request=")
-    else args.getOrNull(idx + 1)
+    if (idx != -1) {
+        val token = args[idx]
+        return if (token.startsWith("--request=")) token.substringAfter("--request=")
+        else args.getOrNull(idx + 1)
+    }
+
+    // If no --request flag, treat all args as the request (joined with spaces)
+    // Filter out other flags like --protocol, --bench, etc.
+    val requestArgs = args.filterNot {
+        it.startsWith("--protocol") || it.startsWith("--bench") || it == "json" || it == "a2a"
+    }
+
+    return if (requestArgs.isNotEmpty()) requestArgs.joinToString(" ") else null
 }
 
 private fun parseProtocolFromArgs(args: Array<String>): OrchestratorFactory.Protocol {

@@ -8,13 +8,30 @@ import ai.koog.agents.core.tools.reflect.ToolSet
 class IntentTools : ToolSet {
 
     @Tool
-    @LLMDescription("Parse English intent like: 'solve day 3 of 2018' or 'solve year 2023' or 'solve day 1 of 2024 part 1'.")
+    @LLMDescription("Parse English intent like: 'solve day 3 of 2018' or 'solve year 2023' or 'solve day 1 of 2024 part 1' or 'solve day 1 part 2 of 2024'.")
     fun parseIntent(text: String): String {
         val t = text.trim().lowercase()
-        // Try day + year + optional part
+        // Try day + year + optional part (part can be before or after "of year")
+        val reDayPartYear = Regex(".*day\\s+(\\d{1,2})(?:\\s+part\\s+(\\d))?.*of\\s*(\\d{4}).*")
         val reDayYearPart = Regex(".*day\\s+(\\d{1,2}).*of\\s*(\\d{4})(?:.*part\\s*(\\d))?.*")
         val reYear = Regex(".*year\\s*(\\d{4}).*")
 
+        // First try: day X part Y of YYYY
+        reDayPartYear.matchEntire(t)?.let { m ->
+            val day = m.groupValues.getOrNull(1)?.toIntOrNull()
+            val part = m.groupValues.getOrNull(2)?.toIntOrNull()
+            val year = m.groupValues.getOrNull(3)?.toIntOrNull()
+            if (year != null && day != null) {
+                return "{" +
+                        "\"year\":$year," +
+                        "\"day\":$day," +
+                        "\"part\":${part?.toString() ?: "null"}," +
+                        "\"scope\":\"day\"" +
+                        "}"
+            }
+        }
+
+        // Second try: day X of YYYY part Z
         reDayYearPart.matchEntire(t)?.let { m ->
             val day = m.groupValues.getOrNull(1)?.toIntOrNull()
             val year = m.groupValues.getOrNull(2)?.toIntOrNull()
